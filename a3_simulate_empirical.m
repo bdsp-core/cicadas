@@ -10,8 +10,10 @@ kp = 0;     % Pure integral control
 ki = 20;    % Very aggressive control for tight disease suppression
 Amax = 50;  % pump upper bound
 th = 0.05;  % Very low target for tight control
+
 %% 3. Hazard‑model constants - components of L0 (covariates)
 b0 = 0.1;   % Baseline risk
+
 %% Log‑normebal‑shaped trajectory for L
 N = 2000;
 pulseAmp = 1; pulseMu = 20; pulseWidth = 1.8; pulseC = 15;
