@@ -47,15 +47,15 @@ function [t, L, A, V, Y, Rx_actual] = fcnRunSimulation_GetDataOnly(Rx, harmE, ha
      Rx_actual(1) = currentRx;
  end
  
- % Parameters for hazards
+ % Parameters for hazards (reduced by 50% for more realistic adherence)
  % Treatment stopping hazard (higher when L is low)
- stop_treat_hazard_max = 0.02;
+ stop_treat_hazard_max = 0.01;  % Reduced from 0.02
  
  % Dropout hazard (depends on L, harmE, harmA)
- dropout_hazard_base = 0.001;
+ dropout_hazard_base = 0.0005;  % Reduced from 0.001
  
- % Treatment switching hazard (keep from original code)
- switch_hazard_max = 0.015;
+ % Treatment switching hazard 
+ switch_hazard_max = 0.0075;    % Reduced from 0.015
  switch_hazard_decay = 0.03;
  
  % Hazard functions
