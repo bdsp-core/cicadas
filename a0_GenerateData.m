@@ -26,6 +26,11 @@ clear; clc; format compact;
 rng(0) % Set random seed for reproducibility
 
 %% 1. SIMULATION PARAMETERS ==========================================
+
+% Trial Design Parameters
+N = 2000;   % Number of patients to simulate
+RCT = 0;    % Trial type: 1=Randomized Controlled Trial, 0=Observational Study
+
 % PI Controller Parameters
 C = 3;      % Drug potency (higher = more effective treatment)
 g = 4;      % Dose-response curve steepness
@@ -42,10 +47,6 @@ pulseAmp = 1;       % Pulse amplitude
 pulseMu = 20;       % Pulse timing parameter
 pulseWidth = 1.8;   % Pulse width
 pulseC = 15;        % Pulse center parameter
-
-% Trial Design Parameters
-N = 2000;   % Number of patients to simulate
-RCT = 1;    % Trial type: 1=Randomized Controlled Trial, 0=Observational Study
 
 %% 2. DATA STORAGE INITIALIZATION ====================================
 
@@ -106,9 +107,9 @@ for i = 1:N
     pulseCR = max(0, pulseC + randn*(0.2*pulseC));            % ±20% variation
     
     % Run individual patient simulation
-    [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, th, kp, ki, ...
-                                                   Amax, b0, pulseAmpR, pulseMuR, ...
-                                                   pulseWidthR, pulseCR, RCT);
+    [t, L, A, V, Y, Rx_actual] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, th, kp, ki, ...
+                                                              Amax, b0, pulseAmpR, pulseMuR, ...
+                                                              pulseWidthR, pulseCR, RCT);
     
     % Store longitudinal data for this patient
     numTimePoints = length(t);
@@ -117,7 +118,7 @@ for i = 1:N
     % Populate data arrays
     sid(indices) = i;
     time(indices) = t;
-    Rx_vals(indices) = Rx;
+    Rx_vals(indices) = Rx_actual;  % Use actual treatment status (time-varying)
     harmE_vals(indices) = harmE;
     harmA_vals(indices) = harmA;
     b0_vals(indices) = b0;
@@ -139,12 +140,16 @@ fprintf('Simulation complete. Processed %d total observations.\n', ct);
 
 %% 4. DATA EXPORT AND STORAGE ========================================
 
-% Create comprehensive data table
-T = table(sid(1:ct), time(1:ct), Rx_vals(1:ct), harmE_vals(1:ct), harmA_vals(1:ct), ...
-          b0_vals(1:ct), L_vals(1:ct), A_vals(1:ct), V_vals(1:ct), Y_vals(1:ct), ...
-          pulseAmpR_vals(1:ct), pulseMuR_vals(1:ct), pulseWidthR_vals(1:ct), pulseCR_vals(1:ct), ...
-          'VariableNames', {'sid', 't', 'Rx', 'harmE', 'harmA', 'b0', 'L', 'A', 'V', 'Y', ...
-          'pulseAmpR', 'pulseMuR', 'pulseWidthR', 'pulseCR'});
+% Create data table with only essential variables for causal inference
+T = table(sid(1:ct), time(1:ct), Rx_vals(1:ct), L_vals(1:ct), A_vals(1:ct), V_vals(1:ct), Y_vals(1:ct), ...
+          'VariableNames', {'sid', 't', 'Rx', 'L', 'A', 'V', 'Y'});
+
+% Also create comprehensive table for internal analysis (not exported)
+T_full = table(sid(1:ct), time(1:ct), Rx_vals(1:ct), harmE_vals(1:ct), harmA_vals(1:ct), ...
+               b0_vals(1:ct), L_vals(1:ct), A_vals(1:ct), V_vals(1:ct), Y_vals(1:ct), ...
+               pulseAmpR_vals(1:ct), pulseMuR_vals(1:ct), pulseWidthR_vals(1:ct), pulseCR_vals(1:ct), ...
+               'VariableNames', {'sid', 't', 'Rx', 'harmE', 'harmA', 'b0', 'L', 'A', 'V', 'Y', ...
+               'pulseAmpR', 'pulseMuR', 'pulseWidthR', 'pulseCR'});
 
 % Export to CSV for analysis
 filename = 'trial_data.csv';
@@ -152,10 +157,20 @@ writetable(T, filename);
 fprintf('Trial data exported to %s (%d rows, %d variables)\n', filename, height(T), width(T));
 
 % Display summary statistics
-n_treated = sum(T.Rx == 1 & T.t == 0);
-n_untreated = sum(T.Rx == 0 & T.t == 0);
+n_treated_initial = sum(T.Rx == 1 & T.t == 0);  % Initial treatment assignment
+n_untreated_initial = sum(T.Rx == 0 & T.t == 0);
 n_deaths = sum(T.Y > 0);
-fprintf('Summary: %d treated, %d untreated, %d deaths\n', n_treated, n_untreated, n_deaths);
+treatment_switches = sum(diff(T.Rx(T.sid == T.sid(1))) ~= 0);  % Count switches for first patient as example
+
+fprintf('Summary:\n');
+fprintf('  Initial treatment assignment: %d treated (%.1f%%), %d untreated (%.1f%%)\n', ...
+    n_treated_initial, 100*n_treated_initial/N, n_untreated_initial, 100*n_untreated_initial/N);
+fprintf('  Total deaths: %d (%.1f%% of observations)\n', n_deaths, 100*n_deaths/height(T));
+if RCT == 0
+    fprintf('  Note: Rx variable reflects time-varying treatment adherence (includes switches/stops)\n');
+else
+    fprintf('  Note: Rx variable reflects randomized assignment (no switches in RCT mode)\n');
+end
 
 %% 5. VISUALIZATION ===================================================
 
@@ -164,11 +179,11 @@ fprintf('Creating disease burden trajectory plot...\n');
 figure(1); clf;
 hold on;
 
-% Plot trajectories by treatment group
-patient_ids = unique(T.sid);
+% Plot trajectories by initial treatment group (use full dataset for visualization)
+patient_ids = unique(T_full.sid);
 for i = 1:length(patient_ids)
-    patient_data = T(T.sid == patient_ids(i), :);
-    if patient_data.Rx(1) == 1
+    patient_data = T_full(T_full.sid == patient_ids(i), :);
+    if patient_data.Rx(1) == 1  % Color by initial treatment assignment
         plot(patient_data.t, patient_data.L, 'r-', 'LineWidth', 0.5, 'Color', [0.8 0.2 0.2 0.3]);
     else
         plot(patient_data.t, patient_data.L, 'b-', 'LineWidth', 0.5, 'Color', [0.2 0.2 0.8 0.3]);

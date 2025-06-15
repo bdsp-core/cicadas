@@ -1,5 +1,5 @@
 %% Modified fcnRunSimulation - Now with realistic treatment assignment and censoring
-function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, th, kp, ki, Amax, b0, pulseAmp, pulseMu, pulseWidth, pulseC,RCT) 
+function [t, L, A, V, Y, Rx_actual] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, th, kp, ki, Amax, b0, pulseAmp, pulseMu, pulseWidth, pulseC,RCT) 
 
  %% Pre‑allocate --------------------------------------------------
  dt = 0.5; % [h] sample period
@@ -17,6 +17,7 @@ function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, 
  % Variables for treatment switching, stopping and dropout
  V = zeros(1,Nt); % Dropout indicator (0 = still in trial, 1 = dropped out)
  Y = zeros(1,Nt); % Death indicator (0 = alive, 1 = dead)
+ Rx_actual = zeros(1,Nt); % Actual treatment status at each time point
  switchTime = 0; % Time when treatment was switched (0 = no switch)
  stopped_treatment = 0; % Time when treatment was stopped (0 = not stopped)
  
@@ -39,9 +40,11 @@ function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, 
      
      % Update initial treatment
      A(1) = currentRx*2;
+     Rx_actual(1) = currentRx;
  else
      % In non-simulation mode, use provided Rx
      currentRx = Rx;
+     Rx_actual(1) = currentRx;
  end
  
  % Parameters for hazards
@@ -81,8 +84,10 @@ function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, 
      % ---- saturation & anti‑wind‑up -------------------------------
      if stopped_treatment == 0
          A(j) = currentRx*min(max(Aunsat,0),Amax);
+         Rx_actual(j) = currentRx;
      else
          A(j) = 0; % Treatment is stopped
+         Rx_actual(j) = 0; % Not receiving treatment
      end
      
      if A(j) ~= Aunsat
@@ -103,6 +108,7 @@ function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, 
          if rand < stop_treat_hazard * dt
              stopped_treatment = t(j); % Record when treatment was stopped
              A(j) = 0; % Stop treatment
+             Rx_actual(j) = 0; % Update actual treatment status
          end
      end
      
@@ -120,6 +126,7 @@ function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, 
          switchTime = t(j); % Record switch time
          % Update treatment after switch
          A(j) = currentRx*min(max(Aunsat,0),Amax);
+         Rx_actual(j) = currentRx; % Update actual treatment status
      end
      
      % ---- Dropout logic (SIMULATION MODE ONLY) -------------------------------------------
@@ -157,6 +164,7 @@ function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, 
  if RCT == 1
      V = zeros(1,Nt); % No dropouts in non-simulation mode
      A = Rx*2*ones(1,Nt); % Reset infusion rate to original
+     Rx_actual = Rx*ones(1,Nt); % Reset treatment status to original assignment
      switchTime = 0;
      stopped_treatment = 0;
      currentRx = Rx;
@@ -175,6 +183,7 @@ function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, 
      A=A(ii); 
      V=V(ii); 
      Y=Y(ii); 
+     Rx_actual=Rx_actual(ii);
      hY=hY(ii); 
      SY=SY(ii); 
      hA=hA(ii); 
@@ -194,6 +203,7 @@ function [t, L, A, V, Y] = fcnRunSimulation_GetDataOnly(Rx, harmE, harmA, C, g, 
      A=A(ii); 
      V=V(ii); 
      Y=Y(ii); 
+     Rx_actual=Rx_actual(ii);
      hY=hY(ii); 
      SY=SY(ii); 
      hA=hA(ii); 
