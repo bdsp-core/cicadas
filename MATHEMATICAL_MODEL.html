@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematical Model for ICU EEG PKPD Emulated Trial</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 20px;
+        }
+        p {
+            text-align: justify;
+        }
+        ul, ol {
+            padding-left: 30px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        .math {
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        strong {
+            color: #2c3e50;
+        }
+        @media print {
+            body {
+                max-width: 100%;
+                margin: 0;
+                padding: 10px;
+            }
+            h1, h2 {
+                page-break-after: avoid;
+            }
+        }
+        .mjx-chtml {
+            font-size: 110% !important;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Mathematical Model for ICU EEG PKPD Emulated Trial</h1>
+
+<p>This document describes the complete mathematical and statistical model that generates the synthetic clinical trial data. This model enables causal inference studies comparing randomized controlled trials (RCT = 1) versus observational studies (RCT = 0).</p>
+
+<h2>Overview</h2>
+
+<p>The model simulates patient-level trajectories over 168 hours (7 days) with 0.5-hour time steps, incorporating:</p>
+<ul>
+    <li>Patient-specific disease and treatment harm parameters</li>
+    <li>Disease natural history with log-normal trajectory</li>
+    <li>PI-controller based treatment administration</li>
+    <li>Time-dependent mortality hazard</li>
+    <li>Treatment assignment mechanisms (randomized vs observational)</li>
+</ul>
+
+<h2>1. Patient-Level Parameters</h2>
+
+<p>Each patient \(i\) is characterized by:</p>
+
+<h3>1.1 Harm Parameters</h3>
+<ul>
+    <li><strong>Disease harm</strong>: \(\text{harmE}_i \sim \max(0, \mathcal{N}(30, 10^2))\) (truncated normal)</li>
+    <li><strong>Treatment harm</strong>: \(\text{harmA}_i \sim \max(0, \mathcal{N}(10, 5^2))\) (truncated normal)</li>
+</ul>
+
+<h3>1.2 Disease Natural History Parameters</h3>
+<p>Each patient has individualized pulse parameters with ±10-20% variation:</p>
+<ul>
+    <li><strong>Pulse amplitude</strong>: \(\text{pulseAmp}_i \sim \max(0, \mathcal{N}(1, (0.1)^2))\)</li>
+    <li><strong>Pulse timing</strong>: \(\text{pulseMu}_i \sim \max(0, \mathcal{N}(20, (4)^2))\)</li>
+    <li><strong>Pulse width</strong>: \(\text{pulseWidth}_i \sim \max(0, \mathcal{N}(1.8, (0.36)^2))\)</li>
+    <li><strong>Pulse center</strong>: \(\text{pulseC}_i \sim \max(0, \mathcal{N}(15, (3)^2))\)</li>
+</ul>
+
+<h2>2. Treatment Assignment</h2>
+
+<h3>2.1 Randomized Controlled Trial (RCT = 1)</h3>
+<div class="math">
+    \[P(\text{Rx}_i = 1) = 0.5\]
+</div>
+<p>Treatment assignment is independent of patient characteristics.</p>
+
+<h3>2.2 Observational Study (RCT = 0)</h3>
+<div class="math">
+    \[P(\text{Rx}_i = 1) = 0.5 + 0.2 \cdot \frac{\text{harmE}_i - \text{harmA}_i}{\text{harmE}_i + \text{harmA}_i}\]
+</div>
+<p>Treatment probability depends on the relative harm parameters, creating selection bias where patients with higher disease-to-treatment harm ratios are more likely to receive treatment.</p>
+
+<h2>3. Disease Progression Model</h2>
+
+<h3>3.1 Natural History Function</h3>
+<p>The disease natural history follows a log-normal shaped trajectory:</p>
+<div class="math">
+    \[f_i(t) = \frac{\text{pulseAmp}_i}{\max(g_i(t))} \cdot g_i(t)\]
+</div>
+<p>where:</p>
+<div class="math">
+    \[g_i(t) = t^{\text{pulseC}_i} \cdot \exp\left(-\frac{\text{pulseC}_i \cdot t}{\text{pulseMu}_i \cdot \text{pulseWidth}_i}\right)\]
+</div>
+
+<h3>3.2 Treatment Effect Function</h3>
+<p>The treatment suppression factor is:</p>
+<div class="math">
+    \[s_A(A_{i,j}) = 1 - \frac{1}{(C/A_{i,j})^g + 1}\]
+</div>
+<p>where:</p>
+<ul>
+    <li>\(C = 3\) (drug potency)</li>
+    <li>\(g = 4\) (dose-response steepness)</li>
+    <li>\(A_{i,j}\) is the treatment amount for patient \(i\) at time \(j\)</li>
+</ul>
+
+<h3>3.3 Observed Disease Burden</h3>
+<div class="math">
+    \[L_{i,j} = (b_0 + f_i(t_j)) \cdot s_A(A_{i,j-1})\]
+</div>
+<p>where \(b_0 = 0.1\) is the baseline disease level.</p>
+
+<h2>4. Treatment Control System</h2>
+
+<h3>4.1 PI Controller</h3>
+<p>The treatment is determined by a proportional-integral controller:</p>
+<div class="math">
+    \[e_{i,j} = L_{i,j} - \theta\]
+    \[\text{eInt}_{i,j} = \text{eInt}_{i,j-1} + e_{i,j} \cdot \Delta t\]
+    \[A_{\text{unsat},i,j} = k_p \cdot e_{i,j} + k_i \cdot \text{eInt}_{i,j}\]
+</div>
+<p>where:</p>
+<ul>
+    <li>\(\theta = 0.05\) (target threshold)</li>
+    <li>\(k_p = 0\) (proportional gain - pure integral control)</li>
+    <li>\(k_i = 20\) (integral gain)</li>
+    <li>\(\Delta t = 0.5\) hours</li>
+</ul>
+
+<h3>4.2 Treatment Saturation and Anti-Windup</h3>
+<div class="math">
+    \[A_{i,j} = \text{Rx}_{i} \cdot \min(\max(A_{\text{unsat},i,j}, 0), A_{\max})\]
+</div>
+<p>where \(A_{\max} = 50\).</p>
+
+<p>Anti-windup: If \(A_{i,j} \neq A_{\text{unsat},i,j}\):</p>
+<div class="math">
+    \[\text{eInt}_{i,j} = \text{eInt}_{i,j} - \frac{A_{\text{unsat},i,j} - A_{i,j}}{k_i}\]
+</div>
+
+<h2>5. Mortality Hazard Model</h2>
+
+<h3>5.1 Hazard Components</h3>
+<p>The instantaneous mortality hazard has two components:</p>
+
+<p><strong>Disease/Treatment Component:</strong></p>
+<div class="math">
+    \[h_{1,i}(t_j) = \text{scale}_1 \cdot \left[b_0 + \text{harmE}_i \cdot \frac{\sum_{k=1}^j L_{i,k}}{18.4} + \text{harmA}_i \cdot \frac{\sum_{k=1}^j A_{i,k}}{360}\right]\]
+</div>
+
+<p><strong>Time Component:</strong></p>
+<div class="math">
+    \[h_{2,i}(t_j) = \text{scale}_2 \cdot \left(\frac{j}{N_t-1}\right)^2\]
+</div>
+<p>where:</p>
+<ul>
+    <li>\(\text{scale}_1 = 0.0005\)</li>
+    <li>\(\text{scale}_2 = 0.0025\)</li>
+    <li>\(N_t = 337\) (total time points)</li>
+</ul>
+
+<h3>5.2 Total Hazard</h3>
+<div class="math">
+    \[h_{Y,i}(t_j) = h_{1,i}(t_j) + h_{2,i}(t_j)\]
+</div>
+
+<h3>5.3 Survival Probability</h3>
+<div class="math">
+    \[S_{Y,i}(t_j) = S_{Y,i}(t_{j-1}) \cdot \exp(-h_{Y,i}(t_j) \cdot \Delta t)\]
+</div>
+
+<h3>5.4 Death Event</h3>
+<div class="math">
+    \[Y_{i,j} \sim \text{Bernoulli}(h_{Y,i}(t_j) \cdot \Delta t)\]
+</div>
+<p>Once \(Y_{i,j} = 1\), the patient exits the study: \(Y_{i,k} = 1\) for all \(k \geq j\).</p>
+
+<h2>6. Observational Study Complications (RCT = 0 only)</h2>
+
+<h3>6.1 Treatment Switching</h3>
+<p>Exponentially decreasing switch hazard:</p>
+<div class="math">
+    \[h_{\text{switch}}(t) = 0.015 \cdot \exp(-0.03 \cdot t)\]
+</div>
+<p>Treatment switches occur with probability \(h_{\text{switch}}(t_j) \cdot \Delta t\).</p>
+
+<h3>6.2 Treatment Stopping</h3>
+<p>Treatment stopping hazard (for treated patients):</p>
+<div class="math">
+    \[h_{\text{stop}}(L_{i,j}) = 0.02 \cdot \exp(-5 \cdot L_{i,j})\]
+</div>
+<p>Higher when disease burden is low (patients stop when doing well).</p>
+
+<h3>6.3 Dropout Hazard</h3>
+<div class="math">
+    \[h_{\text{dropout},i}(t_j) = 0.001 \cdot \left[1 + 2L_{i,j}^2 + 0.5(\text{harmE}_i + \text{harmA}_i) + 10\left(\frac{j}{N_t}\right)^2\right]\]
+</div>
+<p>Depends on current disease burden, patient harm parameters, and time.</p>
+
+<h2>7. Key Model Features for Causal Inference</h2>
+
+<h3>7.1 Confounding Structure</h3>
+<p>In observational studies (RCT = 0):</p>
+<ul>
+    <li><strong>Treatment selection bias</strong>: \(P(\text{Rx} = 1 | \text{harmE}, \text{harmA})\) depends on harm parameters</li>
+    <li><strong>Time-varying confounding</strong>: Treatment switching depends on evolving disease burden</li>
+    <li><strong>Informative censoring</strong>: Dropout depends on disease trajectory and patient characteristics</li>
+</ul>
+
+<h3>7.2 Identifiability Conditions</h3>
+<p>The model satisfies key assumptions for causal identification:</p>
+<ul>
+    <li><strong>No unmeasured confounders</strong>: All confounders (\(\text{harmE}_i\), \(\text{harmA}_i\), \(L_{i,j}\)) are observed</li>
+    <li><strong>Positivity</strong>: \(0 < P(\text{Rx} = 1 | \text{harmE}, \text{harmA}) < 1\) for all patients</li>
+    <li><strong>Consistency</strong>: Treatment effects are deterministic given patient state</li>
+    <li><strong>Sequential ignorability</strong>: Treatment at time \(t\) is independent of future potential outcomes given observed history</li>
+</ul>
+
+<h3>7.3 True Causal Estimand</h3>
+<p>The target estimand is the <strong>Average Treatment Effect on Survival</strong> from the RCT setting:</p>
+<div class="math">
+    \[\text{ATE} = E[Y^1] - E[Y^0]\]
+</div>
+<p>where \(Y^a\) is the potential survival outcome under treatment regime \(a\).</p>
+
+<h2>8. Implementation Notes</h2>
+
+<h3>8.1 Time Discretization</h3>
+<ul>
+    <li>Time steps: \(t_j = j \cdot \Delta t\) for \(j = 0, 1, \ldots, 336\)</li>
+    <li>\(\Delta t = 0.5\) hours</li>
+    <li>Total follow-up: 168 hours (7 days)</li>
+</ul>
+
+<h3>8.2 Early Termination</h3>
+<p>Simulation terminates early when:</p>
+<ul>
+    <li>Death occurs: \(Y_{i,j} = 1\)</li>
+    <li>Dropout occurs: \(V_{i,j} = 1\) (RCT = 0 only)</li>
+</ul>
+
+<h3>8.3 Numerical Stability</h3>
+<ul>
+    <li>All random parameters are truncated at 0 to ensure positivity</li>
+    <li>PI controller includes anti-windup mechanism</li>
+    <li>Hazard calculations use small time steps to maintain accuracy</li>
+</ul>
+
+<h2>9. Data Output Structure</h2>
+
+<p>Each patient contributes a longitudinal dataset with variables:</p>
+<ul>
+    <li><strong>Patient ID</strong>: \(\text{sid}_i\)</li>
+    <li><strong>Time points</strong>: \(t_j\)</li>
+    <li><strong>Treatment assignment</strong>: \(\text{Rx}_i\)</li>
+    <li><strong>Harm parameters</strong>: \(\text{harmE}_i\), \(\text{harmA}_i\)</li>
+    <li><strong>Disease burden</strong>: \(L_{i,j}\)</li>
+    <li><strong>Treatment amount</strong>: \(A_{i,j}\)</li>
+    <li><strong>Death indicator</strong>: \(Y_{i,j}\)</li>
+    <li><strong>Pulse parameters</strong>: \(\text{pulseAmp}_i\), \(\text{pulseMu}_i\), \(\text{pulseWidth}_i\), \(\text{pulseC}_i\)</li>
+</ul>
+
+<p>This longitudinal structure enables sophisticated causal inference methods including g-methods, targeted maximum likelihood estimation (TMLE), and double-robust estimation.</p>
+
+</body>
+</html>
