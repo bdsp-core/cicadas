@@ -21,31 +21,11 @@ function [t, L, A, V, Y, Rx_actual] = fcnRunSimulation_GetDataOnly(Rx, harmE, ha
  switchTime = 0; % Time when treatment was switched (0 = no switch)
  stopped_treatment = 0; % Time when treatment was stopped (0 = not stopped)
  
- % Initialize treatment status based on harmE and harmA (only in simulation mode)
- if RCT == 0
-     % Treatment probability based on harmE and harmA
-     % Higher harmE -> higher probability of treatment
-     % Higher harmA -> higher probability of NO treatment
-     % If equal, 50:50
-     baseProb = 0.5;
-     relativeFactor = (harmE - harmA) / (harmE + harmA);
-     treatProb = baseProb + 0.5 * relativeFactor;
-     
-     % Assign treatment based on probability
-     if rand < treatProb
-         currentRx = 1; % Assign treatment
-     else
-         currentRx = 0; % Don't assign treatment
-     end
-     
-     % Update initial treatment
-     A(1) = currentRx*2;
-     Rx_actual(1) = currentRx;
- else
-     % In non-simulation mode, use provided Rx
-     currentRx = Rx;
-     Rx_actual(1) = currentRx;
- end
+ % Initialize treatment status using assignment from main script
+ % (Treatment assignment logic is handled in the main script for both RCT modes)
+ currentRx = Rx;
+ A(1) = currentRx*2;
+ Rx_actual(1) = currentRx;
  
  % Parameters for hazards (reduced by 50% for more realistic adherence)
  % Treatment stopping hazard (higher when L is low)
