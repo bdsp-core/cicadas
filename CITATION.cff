@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use CICADAS in your work, please cite the accompanying paper."
+title: "CICADAS: A Simulation-Based Framework for Randomized Trial Emulation in Critical-Care Seizure Treatment"
+abstract: >-
+  CICADAS integrates pharmacokinetic–pharmacodynamic modeling, disease-dynamics
+  models, and the parametric g-formula to emulate randomized trials from
+  observational ICU data with time-varying treatment–confounder feedback.
+  This repository contains the MATLAB implementation (authoritative, used to
+  generate the paper's figures) and a parallel Python port.
+type: software
+authors:
+  - family-names: McCauley
+    given-names: Mitchell
+  - family-names: Westover
+    given-names: Tara
+  - family-names: Wynn
+    given-names: Patrick
+  - family-names: Sartipi
+    given-names: Shadi
+  - family-names: Turley
+    given-names: Niels
+  - family-names: Akras
+    given-names: Zade
+  - family-names: Colin
+    given-names: Pieter
+  - family-names: Webb
+    given-names: Andrew
+  - family-names: Struck
+    given-names: Aaron F.
+  - family-names: Kim
+    given-names: Jennifer
+  - family-names: Cheng
+    given-names: David
+  - family-names: Sun
+    given-names: Haoqi
+  - family-names: Houle
+    given-names: Tim
+  - family-names: Rudin
+    given-names: Cynthia
+  - family-names: Volfovsky
+    given-names: Alexander
+  - family-names: Parikh
+    given-names: Harsh
+  - family-names: Fernandes
+    given-names: Marta B.
+  - family-names: Zafar
+    given-names: Sahar
+  - family-names: Westover
+    given-names: M. Brandon
+    email: mwestove@bidmc.harvard.edu
+    orcid: "https://orcid.org/0000-0002-0351-6097"
+license: MIT
+repository-code: "https://github.com/bdsp-core/cicadas"
