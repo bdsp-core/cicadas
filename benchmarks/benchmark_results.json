@@ -1,0 +1,40 @@
+{
+  "N_obs": 2000,
+  "N_rct": 2000,
+  "horizon_hours": 168,
+  "ATE_rct_truth": 0.14781746031746001,
+  "ATE_naive_KM": -0.04777761659374258,
+  "ATE_IPTW": 0.16626789159924726,
+  "ATE_MSM": 0.31574087059474143,
+  "ATE_gformula_matlab": 0.145,
+  "CI_naive_KM": [
+    -0.11364843298547964,
+    -0.0017047731692263301
+  ],
+  "CI_IPTW": [
+    0.0253314043881672,
+    0.27392045391330777
+  ],
+  "CI_MSM": [
+    0.17235141729075293,
+    0.4165885613345698
+  ],
+  "CI_gformula_matlab": [
+    0.074,
+    0.208
+  ],
+  "survival_treated_rct": 0.46031746031746024,
+  "survival_untreated_rct": 0.3125000000000002,
+  "survival_treated_naive": 0.41951828049596923,
+  "survival_untreated_naive": 0.4672958970897118,
+  "iptw_diagnostics": {
+    "ps_mean": 0.717,
+    "ps_min": 0.4622163216254472,
+    "ps_max": 0.9999998252435632,
+    "weight_mean": 1.0773260267053255,
+    "weight_max": 131.53553675372186,
+    "weight_p95": 1.3621704199969966,
+    "weight_p99": 2.74110926379572
+  },
+  "bootstrap_nboot": 200
+}
