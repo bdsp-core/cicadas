@@ -1,34 +1,60 @@
-# MATLAB autosave files
+# ==================================================================
+# CICADAS .gitignore
+# ==================================================================
+
+# --- MATLAB artifacts ---
 *.asv
-
-# MATLAB compiled files
 *.mex*
-
-# Simulink cache files
-slprj/
-
-# Session info
-octave-workspace
-
-# Simulink autosave extension
 *.autosave
+slprj/
+octave-workspace
+matlab_crash_dump.*
 
-# MATLAB data files (uncomment if you don't want to track data)
-# *.mat
-
-# CSV output files (uncomment if you don't want to track output data)
-# *.csv
-
-# macOS system files
+# --- OS / editor junk ---
 .DS_Store
-
-# Windows system files
 Thumbs.db
-
-# Editor backup files
 *~
 *.swp
 *.swo
+.ipynb_checkpoints/
 
-# MATLAB crash dumps
-matlab_crash_dump.*
+# --- Python artifacts ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# --- Generated data and results ---
+# Regenerate via run_all.m. Keep only small ground-truth parameter files.
+*.mat
+!parmsTrue.mat
+!parmsTrue_*.mat
+
+*.csv
+
+# --- Generated figures and reports ---
+# Authoritative manuscript figures live in the paper LaTeX repo, not here.
+*.pdf
+*.png
+!docs/**/*.pdf
+!docs/**/*.png
+
+# --- Timestamped result text files ---
+*_results_*.txt
+*_summary.txt
+
+# --- Local-only snapshots and backups ---
+reproduction_baseline/
+old/
+outputs/
+
+# --- Working docs (not for public repo) ---
+"@-*.docx"
+"@-*.pdf"
+*.docx
+
+# --- Python & markdown auxiliary ---
+Python_And_Markdown/test_output.txt
