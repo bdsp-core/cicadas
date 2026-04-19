@@ -23,13 +23,10 @@ addpath(repo_root);
 addpath(genpath(fullfile(repo_root, 'CICADA_FIGURES')));
 
 %% 1. Baseline params (copied from a0_GenerateTrialData.m)
-rng(42);
-N = 1000;
+N = 1500;
 th = 0.1;
 ki = 10; Amax = 50;
 parmsControl = [ki Amax];
-[age, sofa, C, g, parmsPD] = fcnGeneratePatientParameters(N, ...
-    'TargetCMean', 3, 'TargetGMean', 4, 'CV', 0.1);
 ke = 0.5;
 parmsY = [-7, .3, 20, 5];
 parmsV = [-5, 2.0, .1, -5, 2, 1.5];
@@ -37,17 +34,18 @@ parmsL = [0.25, 1, 0.15, 0.05, 0.15, 0.03, 40];
 dt = 2; t = 0:dt:168;
 
 %% 2. Sensitivity grid
-delta_A_vals = [0.0, 0.5, 1.0, 1.5, 2.0];   % logit shift for treatment assignment
-delta_Y_vals = [0.0, 0.5, 1.0, 1.5, 2.0];   % logit shift for mortality hazard
+delta_A_vals = [0.0, 0.5, 1.0, 1.5, 2.0];
+delta_Y_vals = [0.0, 0.5, 1.0, 1.5, 2.0];
+n_seeds = 3;
 
 nA = numel(delta_A_vals); nY = numel(delta_Y_vals);
-ate_rct      = nan(nA, nY);   % oracle RCT ATE (U still active in DGP)
-ate_naive    = nan(nA, nY);
-ate_gformula = nan(nA, nY);
-bias_gf      = nan(nA, nY);
+% Third dim = seed
+ate_rct_all      = nan(nA, nY, n_seeds);
+ate_naive_all    = nan(nA, nY, n_seeds);
+ate_gformula_all = nan(nA, nY, n_seeds);
 
 %% 3. Sweep
-total = nA * nY;
+total = nA * nY * n_seeds;
 k = 0;
 t_all = tic;
 
@@ -55,62 +53,65 @@ for ia = 1:nA
     dA = delta_A_vals(ia);
     for iY = 1:nY
         dY = delta_Y_vals(iY);
-        k = k + 1;
-        fprintf('\n[%d/%d] delta_A=%.2f, delta_Y=%.2f ...\n', k, total, dA, dY);
-        t_cond = tic;
+        for seed = 1:n_seeds
+            k = k + 1;
+            rng(1000*seed + 100*ia + iY);
+            fprintf('\n[%d/%d] dA=%.1f, dY=%.1f, seed=%d ...\n', k, total, dA, dY, seed);
+            t_cond = tic;
 
-        % per-patient hidden confounder (same across RCT and Obs arms for this condition)
-        U = rand(1, N) < 0.5;
-        u_shift_Y = U * dY;
+            [age, sofa, C, g] = fcnGeneratePatientParameters(N, ...
+                'TargetCMean', 3, 'TargetGMean', 4, 'CV', 0.1);
+            U = rand(1, N) < 0.5;
+            u_shift_Y = U * dY;
 
-        %% ---- RCT arm (U still modifies mortality; no selection) ----
-        L0 = fcnGenerateStochasticTrajectories(t, parmsL, N);
-        treatProb_rct = 0.5*ones(1, N);
-        T1 = fcnSimulate_N_Patients_withU(N, 1, treatProb_rct, th, C, g, ke, L0, ...
-                                          parmsControl, parmsY, parmsV, age, sofa, ...
-                                          u_shift_Y);
-        [s0_true, s1_true] = fcnPlotKM(T1);
-        close all;
-        ate_rct(ia, iY) = s1_true(end) - s0_true(end);
+            L0 = fcnGenerateStochasticTrajectories(t, parmsL, N);
 
-        %% ---- Observational arm (U affects treatment assignment via dA) ----
-        treatProb_obs_base = fcnBiasedAssignmentProb(age, sofa, L0(:, 1:5));
-        logit_base = log(max(min(treatProb_obs_base, 1-1e-6), 1e-6) ./ ...
-                         (1 - max(min(treatProb_obs_base, 1-1e-6), 1e-6)));
-        logit_obs  = logit_base + U * dA;
-        treatProb_obs = 1 ./ (1 + exp(-logit_obs));
-        T0 = fcnSimulate_N_Patients_withU(N, 0, treatProb_obs, th, C, g, ke, L0, ...
-                                          parmsControl, parmsY, parmsV, age, sofa, ...
-                                          u_shift_Y);
+            T1 = fcnSimulate_N_Patients_withU(N, 1, 0.5*ones(1,N), th, C, g, ke, L0, ...
+                                              parmsControl, parmsY, parmsV, age, sofa, ...
+                                              u_shift_Y);
+            [s0_true, s1_true] = fcnPlotKM(T1); close all;
+            ate_rct_all(ia, iY, seed) = s1_true(end) - s0_true(end);
 
-        %% ---- Naive KM from observational data ----
-        [s0_naive, s1_naive] = naiveKM(T0);
-        ate_naive(ia, iY) = s1_naive(end) - s0_naive(end);
+            treatProb_base = fcnBiasedAssignmentProb(age, sofa, L0(:, 1:5));
+            p_clip = max(min(treatProb_base, 1-1e-6), 1e-6);
+            logit_obs = log(p_clip ./ (1 - p_clip)) + U * dA;
+            treatProb_obs = 1 ./ (1 + exp(-logit_obs));
+            T0 = fcnSimulate_N_Patients_withU(N, 0, treatProb_obs, th, C, g, ke, L0, ...
+                                              parmsControl, parmsY, parmsV, age, sofa, ...
+                                              u_shift_Y);
 
-        %% ---- G-formula (U is NOT in T0; hidden by construction) ----
-        try
-            parmsY_est = fcnEstimateDeathParms(T0);
-            [parmsL_est, LL, AA, age_e, sofa_e, t_e] = fcnEstimateParmsL(T0);
-            [ke_est, C_est, g_est] = fcnEstimateParmsPKPD(parmsL_est, LL, AA, age_e, sofa_e, t_e);
-            L0_est = fcnGenerateStochasticTrajectories(t, parmsL_est, N);
-            % simulate counterfactual RCT using the estimated DGP (no U, baseline parmsV=0)
-            T1_est = fcnSimulate_N_Patients_withU(N, 1, 0.5*ones(1,N), th, C_est, g_est, ...
-                                                   ke_est, L0_est, parmsControl, ...
-                                                   parmsY_est, zeros(1,6), age, sofa, ...
-                                                   zeros(1,N));
-            [s0_gf, s1_gf] = fcnPlotKM(T1_est);
-            close all;
-            ate_gformula(ia, iY) = s1_gf(end) - s0_gf(end);
-            bias_gf(ia, iY) = ate_gformula(ia, iY) - ate_rct(ia, iY);
-        catch ME
-            fprintf('  [WARN] g-formula failed: %s\n', ME.message);
+            [s0_n, s1_n] = naiveKM(T0);
+            ate_naive_all(ia, iY, seed) = s1_n(end) - s0_n(end);
+
+            try
+                parmsY_est = fcnEstimateDeathParms(T0);
+                [parmsL_est, LL, AA, age_e, sofa_e, t_e] = fcnEstimateParmsL(T0);
+                [ke_est, C_est, g_est] = fcnEstimateParmsPKPD(parmsL_est, LL, AA, age_e, sofa_e, t_e);
+                L0_est = fcnGenerateStochasticTrajectories(t, parmsL_est, N);
+                T1_est = fcnSimulate_N_Patients_withU(N, 1, 0.5*ones(1,N), th, C_est, g_est, ke_est, ...
+                                                       L0_est, parmsControl, parmsY_est, zeros(1,6), ...
+                                                       age, sofa, zeros(1,N));
+                [s0_gf, s1_gf] = fcnPlotKM(T1_est); close all;
+                ate_gformula_all(ia, iY, seed) = s1_gf(end) - s0_gf(end);
+            catch ME
+                fprintf('  [WARN] g-formula failed: %s\n', ME.message);
+            end
+
+            fprintf('  ATE: RCT=%+.3f, naive=%+.3f, gf=%+.3f (%.1fs)\n', ...
+                    ate_rct_all(ia, iY, seed), ate_naive_all(ia, iY, seed), ...
+                    ate_gformula_all(ia, iY, seed), toc(t_cond));
         end
-
-        fprintf('  ATE_rct=%.3f, ATE_naive=%.3f, ATE_gf=%.3f, bias=%.3f (%.1fs)\n', ...
-                ate_rct(ia, iY), ate_naive(ia, iY), ate_gformula(ia, iY), ...
-                bias_gf(ia, iY), toc(t_cond));
     end
 end
+
+fprintf('\nSweep total: %.1f min\n', toc(t_all)/60);
+
+%% Average across seeds
+ate_rct      = nanmean(ate_rct_all, 3);
+ate_naive    = nanmean(ate_naive_all, 3);
+ate_gformula = nanmean(ate_gformula_all, 3);
+bias_gf      = ate_gformula - ate_rct;
+bias_gf_sd   = nanstd(ate_gformula_all - ate_rct_all, 0, 3);
 
 fprintf('\nSweep total: %.1f min\n', toc(t_all)/60);
 
@@ -139,8 +140,9 @@ end
 
 %% 6. Save results
 out_file = fullfile(script_dir, 'nuc_results.mat');
-save(out_file, 'delta_A_vals','delta_Y_vals','ate_rct','ate_naive','ate_gformula', ...
-     'bias_gf','evalue','sign_flip_dY','N','parmsY','parmsV');
+save(out_file, 'delta_A_vals','delta_Y_vals','n_seeds', ...
+     'ate_rct','ate_naive','ate_gformula','ate_rct_all','ate_naive_all','ate_gformula_all', ...
+     'bias_gf','bias_gf_sd','evalue','sign_flip_dY','N','parmsY','parmsV');
 fprintf('Saved results to %s\n', out_file);
 
 %% 7. Heatmap figure
