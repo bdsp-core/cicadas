@@ -1,0 +1,93 @@
+==========================================================
+OPTIMAL TREATMENT TARGET ANALYSIS RESULTS FOR PAPER
+Generated on: 20-Apr-2026 02:57:23
+==========================================================
+
+STUDY PARAMETERS:
+- Sample size: 2000 patients
+- Bootstrap iterations: 1000
+- Study period: 168 hours
+- Time step: 2 hours
+- Treatment target range: 0.00 to 1.00 (50 levels)
+- Target resolution: 0.020
+- Parallel processing: Yes
+
+OPTIMAL TREATMENT TARGETS:
+Based on TRUE parameters:
+  Optimal threshold: 0.020
+  Maximum ATE: 0.438 (43.8% survival benefit)
+  95% CI: [0.402, 0.475]
+
+Based on ESTIMATED parameters:
+  Optimal threshold: 0.020
+  Maximum ATE: 0.444 (44.4% survival benefit)
+  95% CI: [0.371, 0.507]
+
+OPTIMAL TARGET AGREEMENT:
+Target difference: 0.000
+ATE difference: 0.006 (0.6% points)
+✓ EXCELLENT agreement - targets differ by < 0.05
+
+PERFORMANCE ACROSS TARGET RANGE:
+Overall performance:
+  Correlation (est vs true): 1.000 (p = 0.000)
+  Mean bias: 0.000 (0.0% points)
+  RMS bias: 0.002
+  Max absolute bias: 0.006 at th = 0.020
+
+KEY TARGET THRESHOLDS ANALYSIS:
+Target   True ATE     Est ATE      Bias         Est 95% CI     
+------   --------     -------      ----         -----------    
+0.05     0.398        0.404        0.006        [0.346,0.454]  
+0.10     0.143        0.144        0.001        [0.102,0.188]  
+0.20     0.032        0.033        0.001        [-0.007,0.074] 
+0.50     0.004        0.005        0.000        [-0.037,0.047] 
+
+BOOTSTRAP UNCERTAINTY ANALYSIS:
+Uncertainty at optimal targets:
+  Estimated optimal (th=0.020): CV = 7.7%
+  True optimal (th=0.020): CV = 4.2%
+  Proportion where est > true at optimal: 55.8%
+
+TARGET SELECTION ROBUSTNESS:
+Most frequently selected targets across bootstrap iterations:
+  Estimated parameters: th = 0.020 (91.5% of iterations)
+  True parameters: th = 0.020 (91.8% of iterations)
+  Target agreement rate (within 0.05): 100.0%
+
+CLINICAL DECISION ZONES:
+Beneficial treatment zones (ATE > 2.0%):
+  True parameters: 12/50 targets (24.0%)
+  Estimated parameters: 12/50 targets (24.0%)
+Potentially harmful zones (ATE < -1.0%):
+  True parameters: 1/50 targets (2.0%)
+  Estimated parameters: 1/50 targets (2.0%)
+Safe operating zones (95% CI lower bound > 1%):
+  True parameters: 8 targets
+  Estimated parameters: 8 targets
+
+CLINICAL RECOMMENDATIONS:
+✓ PROCEED with target optimization using estimated parameters
+  - Target agreement is excellent (100.0% bootstrap agreement)
+  - Recommended target: th = 0.020
+
+PARAMETER ESTIMATION PRIORITIES:
+- Current parameter estimation accuracy is EXCELLENT
+- Focus on mortality hazard parameter estimation
+- Bootstrap confidence intervals provide uncertainty quantification
+- Validate target selection with independent data
+
+TECHNICAL DETAILS:
+- Optimization method: Grid search with bootstrap resampling
+- Target range: [0.00, 1.00] with 0.020 resolution
+- Bootstrap method: Resampling by patient ID
+- Confidence intervals: 2.5th and 97.5th percentiles
+- Endpoint: Survival probability at 168 hours
+- Simulation: RCT emulation with 50% treatment probability
+
+DATA AVAILABILITY:
+- Complete bootstrap results saved to: A01Data.mat
+- A0: Bootstrap ATE estimates using estimated parameters
+- A1: Bootstrap ATE estimates using true parameters
+- th: Treatment target grid (50 levels)
+- Confidence bands available for all targets

@@ -86,10 +86,12 @@ def fcnEstimatePKPD_StateSpaceMixedEffects_v2(
     else:
         theta = np.array([3, 0.1, 0.1, 4, 0.1, 0.1, 0.5, 0.5, 0.5], float)
 
-    # Individual params near population
-    rng = np.random.default_rng()
-    C_indiv = theta[0] + theta[1]*age_norm + theta[2]*sofa_norm + 0.1 * rng.standard_normal(N)
-    g_indiv = theta[3] + theta[4]*age_norm + theta[5]*sofa_norm + 0.1 * rng.standard_normal(N)
+    # Individual params near population. Uses global np.random (inherits the
+    # caller's np.random.seed) to match MATLAB's `randn(N,1)` which draws
+    # from the global MT19937 stream. Previously this used an unseeded
+    # default_rng which made the E-step initialization non-reproducible.
+    C_indiv = theta[0] + theta[1]*age_norm + theta[2]*sofa_norm + 0.1 * np.random.randn(N)
+    g_indiv = theta[3] + theta[4]*age_norm + theta[5]*sofa_norm + 0.1 * np.random.randn(N)
     C_indiv = _clip(C_indiv, 0.5, 10.0)
     g_indiv = _clip(g_indiv, 0.5, 10.0)
 
@@ -370,10 +372,16 @@ def runEKF_improved(
             L0_filt[t_] = L0_pred
             P_filt[t_] = P_pred
 
-    # No separate backward RTS step; light smoothing
-    L0_smooth = _smooth_1d(L0_filt, window=5)
+    # Backward RTS smoother (matches MATLAB fcnEstimatePKPD_StateSpaceMixedEffects_v2.m:402-415).
+    L0_smooth = L0_filt.copy()
+    P_smooth = P_filt.copy()
+    for t_ in range(T - 2, 0, -1):
+        if P_filt[t_] > 0 and P_filt[t_ + 1] > 0:
+            A_smooth = P_filt[t_] / (P_filt[t_] + Q)
+            L0_smooth[t_] = L0_filt[t_] + A_smooth * (L0_smooth[t_ + 1] - L0_filt[t_])
+            P_smooth[t_] = P_filt[t_] + (A_smooth ** 2) * (P_smooth[t_ + 1] - P_filt[t_] - Q)
     L0_smooth = _clip(L0_smooth, 0.0, np.inf)
-    return L0_smooth, P_filt, float(log_lik)
+    return L0_smooth, P_smooth, float(log_lik)
 
 
 def optimizeIndividualParams_regularized(

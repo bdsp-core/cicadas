@@ -4,6 +4,7 @@
 import numpy as np
 from typing import Tuple
 from scipy.optimize import minimize
+from fcn_generateTrajectory import fcn_generateTrajectory
 
 def fcnEstimateParmsPKPD(
     parmsL_est: np.ndarray,
@@ -123,9 +124,17 @@ def _compute_PD_regression_nll(
 
     nll = 0.0
 
-    # Generate deterministic natural history L0 based on L_params (single trajectory),
-    # matching MATLAB's fcn_generateTrajectory intent.
-    L0 = _generate_L0_deterministic(L_params, t)  # shape (Nt,)
+    # MATLAB fcnEstimateParmsPKPD.m:94 calls the STOCHASTIC fcn_generateTrajectory
+    # inside the NLL (with T=t(end), dt matching the data). Previous Python
+    # version called a _generate_L0_deterministic helper which changed the
+    # likelihood surface. Restored: draw one stochastic L0 trajectory at the
+    # native high-res dt=0.1 grid, then downsample to the observation grid t.
+    # The np.random global seed is set in the driver script (a1_EstimatePKPD /
+    # a2_CausalSurvivalAnalysis) so this call is reproducible across an a*.py run.
+    traj_full = fcn_generateTrajectory(L_params, N=1, T=float(t[-1]), dt=0.1)
+    # Downsample from the 0.1-hour high-res grid to the observation grid.
+    full_t = np.linspace(0.0, traj_full.shape[1] - 1, traj_full.shape[1]) * 0.1
+    L0 = np.interp(t, full_t, traj_full[0, :])  # shape (Nt,)
 
     for i in range(N_treated):
         L = L_treated[i, :]
@@ -175,35 +184,6 @@ def _compute_PD_regression_nll(
     if not np.isfinite(nll):
         nll = 1e10
     return nll
-
-
-def _generate_L0_deterministic(params: np.ndarray, t: np.ndarray) -> np.ndarray:
-    """
-    Deterministic natural-history trajectory using the SAME drift as your
-    stochastic generator, but without diffusion (noise). This mirrors the
-    intent of MATLAB's fcn_generateTrajectory called in the PD objective.
-    params = [gamma, H, alpha, delta, sigma_early, sigma_late, tau]
-    """
-    gamma, H, alpha, delta = float(params[0]), float(params[1]), float(params[2]), float(params[3])
-    # sigmas/tau are not used (no diffusion)
-    Nt = t.size
-    X = np.zeros(Nt, dtype=float)
-    # X[0] = 0 by MATLAB convention
-    for j in range(1, Nt):
-        current_time = t[j]
-        x_prev = X[j - 1]
-        if current_time < 30.0:
-            growth_term = gamma * x_prev * (1.0 - x_prev / H)
-        else:
-            time_since_peak = current_time - 30.0
-            decay_factor = np.exp(-delta * time_since_peak)
-            growth_term = -alpha * (x_prev - H * decay_factor * 0.2)
-        mean_reversion = -alpha * max(0.0, x_prev - H)
-        drift = growth_term + mean_reversion
-        # Euler step (dt is uniform based on t vector)
-        dt = t[j] - t[j - 1]
-        X[j] = max(0.0, x_prev + drift * dt)
-    return X  # shape (Nt,)
 
 
 def _log_normpdf(x: float, mu: float, sigma: float) -> float:

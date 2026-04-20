@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.io import loadmat, savemat
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from datetime import datetime
 
 # ---------------------------------------------------------------------
 # Reproducibility (mirrors MATLAB rng(0) concept for the driver)
@@ -90,7 +91,10 @@ def fcn_bootstrapBySID_py(T0: pd.DataFrame, N: int, rng: np.random.Generator) ->
 from fcn_generateStochasticTrajectories import fcnGenerateStochasticTrajectories
 from fcnEstimateDeathParms import fcnEstimateDeathParms
 from fcnSimulate_N_Patients import fcnSimulate_N_Patients
-# If you have fcnPlotKM and fcn_bootstrapBySID in Python, you can import and swap them in.
+# Use the full fcnPlotKM which step-interpolates to the 0:2:168 grid (85 points)
+# matching MATLAB. The inline `fcnPlotKM_py` above does NOT align to 168 — it
+# returns survival at the last raw event time — which inflates s1[-1]−s0[-1].
+from fcnPlotKM import fcnPlotKM
 
 # ---------------------------------------------------------------------
 # Worker for parallel bootstrap
@@ -131,9 +135,10 @@ def _bootstrap_worker(
         T_est = fcnSimulate_N_Patients(
             N, RCT, treatProb, th, C, g, ke, L0, parmsControl, parmsY_est, parmsV_est, age, sofa
         )
-        # KM curves (using inline helper)
-        s0, s1, _, _ = fcnPlotKM_py(T_ref)
-        s0_est, s1_est, _, _ = fcnPlotKM_py(T_est)
+        # KM curves aligned to 0:2:168 (85 points) — fcnPlotKM is the parity-
+        # matched translation of matlab/fcnPlotKM.m. s1[-1] is S(168).
+        s0, s1, _, _ = fcnPlotKM(T_ref)
+        s0_est, s1_est, _, _ = fcnPlotKM(T_est)
 
         ATEest[i] = s1_est[-1] - s0_est[-1]
         ATEref[i] = s1[-1] - s0[-1]
@@ -233,3 +238,229 @@ if __name__ == "__main__":
         },
         do_compression=True,
     )
+
+    # -----------------------------------------------------------------
+    # Export optimal treatment target analysis results to text file
+    # (Ported from matlab/a4_OptimalTreatmentTarget.m:57-298)
+    # -----------------------------------------------------------------
+    try:
+        _now = datetime.now()
+        _filename = f"optimal_treatment_target_results_{_now.strftime('%Y%m%d_%H%M%S')}.txt"
+        with open(_filename, 'w') as f:
+            f.write('==========================================================\n')
+            f.write('OPTIMAL TREATMENT TARGET ANALYSIS RESULTS FOR PAPER\n')
+            f.write(f"Generated on: {_now.strftime('%d-%b-%Y %H:%M:%S')}\n")
+            f.write('==========================================================\n\n')
+
+            # Study parameters
+            f.write('STUDY PARAMETERS:\n')
+            f.write(f"- Sample size: {N} patients\n")
+            f.write(f"- Bootstrap iterations: {Nboot}\n")
+            f.write('- Study period: 168 hours\n')
+            f.write(f"- Time step: {int(dt)} hours\n")
+            f.write(f"- Treatment target range: {th.min():.2f} to {th.max():.2f} (50 levels)\n")
+            f.write(f"- Target resolution: {th[1] - th[0]:.3f}\n")
+            f.write('- Parallel processing: Yes\n\n')
+
+            # Summary statistics across bootstrap
+            A0_median = np.median(A0, axis=0)
+            A1_median = np.median(A1, axis=0)
+            A0_lower = np.percentile(A0, 2.5, axis=0)
+            A0_upper = np.percentile(A0, 97.5, axis=0)
+            A1_lower = np.percentile(A1, 2.5, axis=0)
+            A1_upper = np.percentile(A1, 97.5, axis=0)
+
+            opt_idx_est = int(np.argmax(A0_median))
+            opt_idx_true = int(np.argmax(A1_median))
+            max_ate_est = float(A0_median[opt_idx_est])
+            max_ate_true = float(A1_median[opt_idx_true])
+
+            f.write('OPTIMAL TREATMENT TARGETS:\n')
+            f.write('Based on TRUE parameters:\n')
+            f.write(f"  Optimal threshold: {th[opt_idx_true]:.3f}\n")
+            f.write(f"  Maximum ATE: {max_ate_true:.3f} ({max_ate_true*100:.1f}% survival benefit)\n")
+            f.write(f"  95% CI: [{A1_lower[opt_idx_true]:.3f}, {A1_upper[opt_idx_true]:.3f}]\n")
+
+            f.write('\nBased on ESTIMATED parameters:\n')
+            f.write(f"  Optimal threshold: {th[opt_idx_est]:.3f}\n")
+            f.write(f"  Maximum ATE: {max_ate_est:.3f} ({max_ate_est*100:.1f}% survival benefit)\n")
+            f.write(f"  95% CI: [{A0_lower[opt_idx_est]:.3f}, {A0_upper[opt_idx_est]:.3f}]\n")
+
+            target_difference = abs(th[opt_idx_est] - th[opt_idx_true])
+            ate_difference = max_ate_est - max_ate_true
+
+            f.write('\nOPTIMAL TARGET AGREEMENT:\n')
+            f.write(f"Target difference: {target_difference:.3f}\n")
+            f.write(f"ATE difference: {ate_difference:.3f} ({ate_difference*100:.1f}% points)\n")
+
+            if target_difference < 0.05:
+                f.write('+ EXCELLENT agreement - targets differ by < 0.05\n')
+            elif target_difference < 0.1:
+                f.write('+ GOOD agreement - targets differ by < 0.10\n')
+            elif target_difference < 0.2:
+                f.write('!!! MODERATE agreement - targets differ by < 0.20\n')
+            else:
+                f.write('x POOR agreement - targets differ by >= 0.20\n')
+
+            # Performance across target range
+            f.write('\nPERFORMANCE ACROSS TARGET RANGE:\n')
+
+            bias_median = A0_median - A1_median
+            if np.std(A0_median) > 0 and np.std(A1_median) > 0:
+                correlation = float(np.corrcoef(A0_median, A1_median)[0, 1])
+            else:
+                correlation = 0.0
+            n_obs = len(A0_median)
+            if abs(correlation) < 1 and n_obs > 2:
+                t_stat = correlation * np.sqrt((n_obs - 2) / (1 - correlation**2))
+                from math import erf, sqrt
+                p_value = float(2 * (1 - 0.5 * (1 + erf(abs(t_stat) / sqrt(2)))))
+            else:
+                p_value = 0.0
+
+            f.write('Overall performance:\n')
+            f.write(f"  Correlation (est vs true): {correlation:.3f} (p = {p_value:.3f})\n")
+            f.write(f"  Mean bias: {np.mean(bias_median):.3f} ({np.mean(bias_median)*100:.1f}% points)\n")
+            f.write(f"  RMS bias: {np.sqrt(np.mean(bias_median**2)):.3f}\n")
+            max_abs_bias = float(np.max(np.abs(bias_median)))
+            max_abs_bias_idx = int(np.argmax(np.abs(bias_median)))
+            f.write(f"  Max absolute bias: {max_abs_bias:.3f} at th = {th[max_abs_bias_idx]:.3f}\n")
+
+            # Key target thresholds
+            key_targets = [0.05, 0.1, 0.2, 0.5]
+            f.write('\nKEY TARGET THRESHOLDS ANALYSIS:\n')
+            f.write(f"{'Target':<8s} {'True ATE':<12s} {'Est ATE':<12s} {'Bias':<12s} {'Est 95% CI':<15s}\n")
+            f.write(f"{'------':<8s} {'--------':<12s} {'-------':<12s} {'----':<12s} {'-----------':<15s}\n")
+
+            for target_val in key_targets:
+                target_idx = int(np.argmin(np.abs(th - target_val)))
+                true_ate = A1_median[target_idx]
+                est_ate = A0_median[target_idx]
+                bias_v = est_ate - true_ate
+                ci_str = f"[{A0_lower[target_idx]:.3f},{A0_upper[target_idx]:.3f}]"
+                f.write(f"{target_val:<8.2f} {true_ate:<12.3f} {est_ate:<12.3f} {bias_v:<12.3f} {ci_str:<15s}\n")
+
+            # Bootstrap uncertainty
+            f.write('\nBOOTSTRAP UNCERTAINTY ANALYSIS:\n')
+            if np.mean(A0[:, opt_idx_est]) != 0:
+                cv_est_optimal = np.std(A0[:, opt_idx_est], ddof=1) / abs(np.mean(A0[:, opt_idx_est])) * 100
+            else:
+                cv_est_optimal = float('nan')
+            if np.mean(A1[:, opt_idx_true]) != 0:
+                cv_true_optimal = np.std(A1[:, opt_idx_true], ddof=1) / abs(np.mean(A1[:, opt_idx_true])) * 100
+            else:
+                cv_true_optimal = float('nan')
+
+            f.write('Uncertainty at optimal targets:\n')
+            f.write(f"  Estimated optimal (th={th[opt_idx_est]:.3f}): CV = {cv_est_optimal:.1f}%\n")
+            f.write(f"  True optimal (th={th[opt_idx_true]:.3f}): CV = {cv_true_optimal:.1f}%\n")
+
+            proportion_est_better = float(np.mean(A0[:, opt_idx_est] > A1[:, opt_idx_true]))
+            f.write(f"  Proportion where est > true at optimal: {proportion_est_better*100:.1f}%\n")
+
+            # Target selection robustness
+            est_optimal_selections = np.zeros(th.size)
+            true_optimal_selections = np.zeros(th.size)
+            for n in range(Nboot):
+                est_optimal_selections[int(np.argmax(A0[n, :]))] += 1
+                true_optimal_selections[int(np.argmax(A1[n, :]))] += 1
+            est_optimal_selections = est_optimal_selections / Nboot * 100
+            true_optimal_selections = true_optimal_selections / Nboot * 100
+
+            most_freq_est_idx = int(np.argmax(est_optimal_selections))
+            most_freq_true_idx = int(np.argmax(true_optimal_selections))
+            max_est_freq = float(est_optimal_selections[most_freq_est_idx])
+            max_true_freq = float(true_optimal_selections[most_freq_true_idx])
+
+            f.write('\nTARGET SELECTION ROBUSTNESS:\n')
+            f.write('Most frequently selected targets across bootstrap iterations:\n')
+            f.write(f"  Estimated parameters: th = {th[most_freq_est_idx]:.3f} ({max_est_freq:.1f}% of iterations)\n")
+            f.write(f"  True parameters: th = {th[most_freq_true_idx]:.3f} ({max_true_freq:.1f}% of iterations)\n")
+
+            agreement_tolerance = 0.05
+            agreement_count = 0
+            for n in range(Nboot):
+                if abs(th[int(np.argmax(A0[n, :]))] - th[int(np.argmax(A1[n, :]))]) <= agreement_tolerance:
+                    agreement_count += 1
+            agreement_rate = agreement_count / Nboot * 100
+            f.write(f"  Target agreement rate (within {agreement_tolerance:.2f}): {agreement_rate:.1f}%\n")
+
+            # Clinical decision zones
+            f.write('\nCLINICAL DECISION ZONES:\n')
+
+            beneficial_threshold = 0.02
+            beneficial_est = int(np.sum(A0_median > beneficial_threshold))
+            beneficial_true = int(np.sum(A1_median > beneficial_threshold))
+
+            f.write(f"Beneficial treatment zones (ATE > {beneficial_threshold*100:.1f}%):\n")
+            f.write(f"  True parameters: {beneficial_true}/{len(th)} targets ({beneficial_true/len(th)*100:.1f}%)\n")
+            f.write(f"  Estimated parameters: {beneficial_est}/{len(th)} targets ({beneficial_est/len(th)*100:.1f}%)\n")
+
+            harmful_threshold = -0.01
+            harmful_est = int(np.sum(A0_median < harmful_threshold))
+            harmful_true = int(np.sum(A1_median < harmful_threshold))
+
+            f.write(f"Potentially harmful zones (ATE < {harmful_threshold*100:.1f}%):\n")
+            f.write(f"  True parameters: {harmful_true}/{len(th)} targets ({harmful_true/len(th)*100:.1f}%)\n")
+            f.write(f"  Estimated parameters: {harmful_est}/{len(th)} targets ({harmful_est/len(th)*100:.1f}%)\n")
+
+            safe_zone_est = A0_lower > 0.01
+            safe_zone_true = A1_lower > 0.01
+            safe_targets_est = int(np.sum(safe_zone_est))
+            safe_targets_true = int(np.sum(safe_zone_true))
+
+            f.write('Safe operating zones (95% CI lower bound > 1%):\n')
+            f.write(f"  True parameters: {safe_targets_true} targets\n")
+            f.write(f"  Estimated parameters: {safe_targets_est} targets\n")
+
+            # Clinical recommendations
+            f.write('\nCLINICAL RECOMMENDATIONS:\n')
+            if target_difference < 0.1 and agreement_rate > 70:
+                f.write('+ PROCEED with target optimization using estimated parameters\n')
+                f.write(f"  - Target agreement is excellent ({agreement_rate:.1f}% bootstrap agreement)\n")
+                f.write(f"  - Recommended target: th = {th[opt_idx_est]:.3f}\n")
+                if safe_targets_est > 10:
+                    f.write('  - Multiple safe targets available for flexibility\n')
+            elif target_difference < 0.2:
+                f.write('!!! CAUTION advised for target optimization\n')
+                f.write(f"  - Moderate target agreement ({agreement_rate:.1f}% bootstrap agreement)\n")
+                f.write(f"  - Consider sensitivity analysis around th = {th[opt_idx_est]:.3f} +/- {target_difference:.2f}\n")
+            else:
+                f.write('x HIGH RISK for target optimization\n')
+                f.write(f"  - Poor target agreement ({agreement_rate:.1f}% bootstrap agreement)\n")
+                f.write('  - Improve parameter estimation before optimization\n')
+                f.write('  - Consider conservative target selection\n')
+
+            # Parameter estimation priorities
+            f.write('\nPARAMETER ESTIMATION PRIORITIES:\n')
+            if np.mean(np.abs(bias_median)) < 0.02:
+                f.write('- Current parameter estimation accuracy is EXCELLENT\n')
+            elif np.mean(np.abs(bias_median)) < 0.05:
+                f.write('- Current parameter estimation accuracy is GOOD\n')
+            else:
+                f.write('- Parameter estimation accuracy needs IMPROVEMENT\n')
+
+            f.write('- Focus on mortality hazard parameter estimation\n')
+            f.write('- Bootstrap confidence intervals provide uncertainty quantification\n')
+            f.write('- Validate target selection with independent data\n')
+
+            # Technical details
+            f.write('\nTECHNICAL DETAILS:\n')
+            f.write('- Optimization method: Grid search with bootstrap resampling\n')
+            f.write(f"- Target range: [{th.min():.2f}, {th.max():.2f}] with {th[1]-th[0]:.3f} resolution\n")
+            f.write('- Bootstrap method: Resampling by patient ID\n')
+            f.write('- Confidence intervals: 2.5th and 97.5th percentiles\n')
+            f.write('- Endpoint: Survival probability at 168 hours\n')
+            f.write('- Simulation: RCT emulation with 50% treatment probability\n')
+
+            # Data availability
+            f.write('\nDATA AVAILABILITY:\n')
+            f.write('- Complete bootstrap results saved to: A01Data.mat\n')
+            f.write('- A0: Bootstrap ATE estimates using estimated parameters\n')
+            f.write('- A1: Bootstrap ATE estimates using true parameters\n')
+            f.write('- th: Treatment target grid (50 levels)\n')
+            f.write('- Confidence bands available for all targets\n')
+
+        print(f"Optimal treatment target analysis results exported to: {_filename}")
+    except Exception as _exc:
+        print(f"WARNING: Failed to export optimal treatment target results text file: {_exc}")

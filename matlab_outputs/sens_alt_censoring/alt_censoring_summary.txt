@@ -1,0 +1,8 @@
+Alternative-censoring sensitivity
+RCT truth ATE: +0.141
+
+regime     cens rate      ATE            bias          
+baseline   0.009          +0.136         -0.006        
+MCAR       0.003          +0.223         +0.081        
+strong     0.052          +0.309         +0.168        
+none       0.000          +0.198         +0.057        

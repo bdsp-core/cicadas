@@ -1,0 +1,84 @@
+==========================================================
+TRIAL SIMULATION RESULTS FOR PAPER
+Generated on: 19-Apr-2026 22:10:23
+==========================================================
+
+SIMULATION PARAMETERS:
+- Sample size: 2000 patients per trial type
+- Study period: 168 hours
+- Time step: 2 hours
+- Target threshold: 0.100
+- Elimination constant (ke): 0.500
+- PI controller gain (ki): 10.0
+- Maximum pump rate (Amax): 50.0
+
+TRUE MODEL PARAMETERS:
+Mortality hazard (Y) parameters:
+  a0: -7.000
+  a1: 0.300
+  a2: 20.000
+  a3: 5.000
+
+Censoring hazard (V) parameters:
+  b0: -5.000
+  b1: 2.000
+  b2: 0.100
+  b3: -5.000
+  b4: 2.000
+  b5: 1.500
+
+Disease natural history (L) parameters:
+  growth_rate: 0.250
+  peak_height: 1.000
+  alpha: 0.150
+  decay_rate: 0.050
+  sigma_early: 0.150
+  sigma_late: 0.030
+  sigma_transition: 40.000
+
+PATIENT POPULATION:
+Age: 54.0 ± 20.5 years
+SOFA score: 12.3 ± 6.9
+Clearance (C): 3.00 ± 0.35
+Potency (g): 4.00 ± 0.42
+
+TREATMENT ASSIGNMENT:
+RCT (trial=1): Random 50% assignment
+Observational (trial=0): Biased assignment based on age, SOFA, initial disease severity
+Treated patients in observational study: 1434 (71.7%)
+Untreated patients in observational study: 566 (28.3%)
+
+PRIMARY RESULTS - AVERAGE TREATMENT EFFECTS AT 168 HOURS:
+Method               ATE          Interpretation  Bias vs RCT    
+-------------------- ------------ --------------- ---------------
+RCT (ground truth)     +14.8%%    Beneficial      0.0%% (reference)
+Naive Kaplan-Meier      -4.8%%    Harmful (WRONG!)   -19.6% pts
+G-formula              +14.3%%    Beneficial         -0.4% pts
+
+SURVIVAL RATES AT 168 HOURS:
+Method               Untreated       Treated        
+-------------------- --------------- ---------------
+RCT (truth)          31.2           % 46.0           %
+Naive observational  46.7           % 42.0           %
+G-formula            30.4           % 44.8           %
+
+KEY FINDINGS:
+⚠️  CRITICAL BIAS: Naive analysis suggests treatment is Harmful,
+   but RCT shows treatment is actually Beneficial
+   → This demonstrates the importance of causal inference methods
+- G-formula reduces bias from 19.6 to 0.4 percentage points
+- Bias reduction: 97.8% improvement
+
+STUDY IMPLICATIONS:
+- Observational studies with biased treatment assignment can lead to
+  severely misleading conclusions about treatment effectiveness
+- G-formula/parametric g-computation can correct for confounding
+  when all confounders are measured and properly modeled
+- This simulation validates the causal inference methodology
+  for use in real clinical data analysis
+
+METHODS:
+- Data generation: Discrete-time hazard models with PKPD dynamics
+- Treatment assignment: Biased based on age, SOFA, disease severity
+- Causal inference: G-formula with estimated parameters
+- Comparison: RCT (truth) vs Naive analysis vs G-formula

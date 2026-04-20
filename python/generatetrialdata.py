@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.io import savemat
+from datetime import datetime
 
 # --- Reproducibility (mirrors MATLAB rng(0)) ---
 np.random.seed(0)
@@ -410,3 +411,122 @@ fig_width, fig_height = 6, 9
 fig = plt.gcf()
 fig.set_size_inches(fig_width, fig_height)
 plt.savefig("Fig_swimmer_survival_plot_Obs_Naive.pdf", format="pdf", dpi=300, bbox_inches="tight")
+
+# ---------------------------------------------------------------------
+# Export trial simulation results to text file for paper
+# (Ported from matlab/a0_GenerateTrialData.m:354-476)
+# ---------------------------------------------------------------------
+try:
+    _now = datetime.now()
+    _filename = f"trial_simulation_results_{_now.strftime('%Y%m%d_%H%M%S')}.txt"
+    with open(_filename, 'w') as f:
+        f.write('==========================================================\n')
+        f.write('TRIAL SIMULATION RESULTS FOR PAPER\n')
+        f.write(f"Generated on: {_now.strftime('%d-%b-%Y %H:%M:%S')}\n")
+        f.write('==========================================================\n\n')
+
+        # Simulation parameters
+        f.write('SIMULATION PARAMETERS:\n')
+        f.write(f"- Sample size: {N} patients per trial type\n")
+        f.write('- Study period: 168 hours\n')
+        f.write('- Time step: 2 hours\n')
+        f.write(f"- Target threshold: {th:.3f}\n")
+        f.write(f"- Elimination constant (ke): {ke:.3f}\n")
+        f.write(f"- PI controller gain (ki): {ki:.1f}\n")
+        f.write(f"- Maximum pump rate (Amax): {Amax:.1f}\n\n")
+
+        # True model parameters
+        f.write('TRUE MODEL PARAMETERS:\n')
+        f.write('Mortality hazard (Y) parameters:\n')
+        for i, v in enumerate(parmsY):
+            f.write(f"  a{i}: {v:.3f}\n")
+
+        f.write('\nCensoring hazard (V) parameters:\n')
+        param_names_V = ['b0', 'b1', 'b2', 'b3', 'b4', 'b5']
+        for i, v in enumerate(parmsV):
+            f.write(f"  {param_names_V[i]}: {v:.3f}\n")
+
+        f.write('\nDisease natural history (L) parameters:\n')
+        param_names_L = ['growth_rate', 'peak_height', 'alpha', 'decay_rate',
+                         'sigma_early', 'sigma_late', 'sigma_transition']
+        for i, v in enumerate(parmsL):
+            f.write(f"  {param_names_L[i]}: {v:.3f}\n")
+
+        # Patient population characteristics
+        f.write('\nPATIENT POPULATION:\n')
+        f.write(f"Age: {np.mean(age):.1f} +/- {np.std(age, ddof=1):.1f} years\n")
+        f.write(f"SOFA score: {np.mean(sofa):.1f} +/- {np.std(sofa, ddof=1):.1f}\n")
+        f.write(f"Clearance (C): {np.mean(C):.2f} +/- {np.std(C, ddof=1):.2f}\n")
+        f.write(f"Potency (g): {np.mean(g):.2f} +/- {np.std(g, ddof=1):.2f}\n\n")
+
+        # Treatment assignment bias (observational study)
+        f.write('TREATMENT ASSIGNMENT:\n')
+        f.write('RCT (trial=1): Random 50% assignment\n')
+        f.write('Observational (trial=0): Biased assignment based on age, SOFA, initial disease severity\n')
+        f.write(f"Treated patients in observational study: {len(treated_patients)} ({100*len(treated_patients)/N:.1f}%)\n")
+        f.write(f"Untreated patients in observational study: {len(untreated_patients)} ({100*len(untreated_patients)/N:.1f}%)\n\n")
+
+        # Primary results - Average Treatment Effects
+        f.write('PRIMARY RESULTS - AVERAGE TREATMENT EFFECTS AT 168 HOURS:\n')
+        f.write(f"{'Method':<20s} {'ATE':<12s} {'Interpretation':<15s} {'Bias vs RCT':<15s}\n")
+        f.write(f"{'-'*20:<20s} {'-'*12:<12s} {'-'*15:<15s} {'-'*15:<15s}\n")
+
+        rct_interp = 'Harmful' if ate_true < 0 else 'Beneficial'
+        f.write(f"{'RCT (ground truth)':<20s} {100*ate_true:+7.1f}%     {rct_interp:<15s} {'0.0% (reference)':<15s}\n")
+
+        naive_interp = 'Harmful' if ate_naive < 0 else 'Beneficial'
+        wrong_direction_local = (np.sign(ate_naive) != np.sign(ate_true)) and (ate_true != 0)
+        naive_suffix = ' (WRONG!)' if wrong_direction_local else ''
+        bias_naive = 100 * (ate_naive - ate_true)
+        f.write(f"{'Naive Kaplan-Meier':<20s} {100*ate_naive:+7.1f}%     {naive_interp + naive_suffix:<15s} {bias_naive:+7.1f}% pts\n")
+
+        # G-formula (only if computed in Python scope)
+        if 'ate_gformula' in dir():
+            gf_interp = 'Harmful' if ate_gformula < 0 else 'Beneficial'
+            bias_gformula = 100 * (ate_gformula - ate_true)
+            f.write(f"{'G-formula':<20s} {100*ate_gformula:+7.1f}%     {gf_interp:<15s} {bias_gformula:+7.1f}% pts\n")
+        else:
+            # TODO: add ate_gformula when available
+            bias_gformula = None
+
+        # Survival rates at 168 hours
+        f.write('\nSURVIVAL RATES AT 168 HOURS:\n')
+        f.write(f"{'Method':<20s} {'Untreated':<15s} {'Treated':<15s}\n")
+        f.write(f"{'-'*20:<20s} {'-'*15:<15s} {'-'*15:<15s}\n")
+        f.write(f"{'RCT (truth)':<20s} {s0_true[-1]*100:<14.1f}% {s1_true[-1]*100:<14.1f}%\n")
+        f.write(f"{'Naive observational':<20s} {s0_naive[-1]*100:<14.1f}% {s1_naive[-1]*100:<14.1f}%\n")
+        if 's0_gf' in dir() and 's1_gf' in dir():
+            f.write(f"{'G-formula':<20s} {s0_gf[-1]*100:<14.1f}% {s1_gf[-1]*100:<14.1f}%\n")
+        # else: TODO: add s0_gf/s1_gf when available
+
+        # Key findings
+        f.write('\nKEY FINDINGS:\n')
+        if wrong_direction_local:
+            f.write(f"!!! CRITICAL BIAS: Naive analysis suggests treatment is {naive_interp},\n")
+            f.write(f"   but RCT shows treatment is actually {rct_interp}\n")
+            f.write('   -> This demonstrates the importance of causal inference methods\n')
+        if bias_gformula is not None:
+            f.write(f"- G-formula reduces bias from {abs(bias_naive):.1f} to {abs(bias_gformula):.1f} percentage points\n")
+            if abs(bias_naive) > 0:
+                f.write(f"- Bias reduction: {100*(abs(bias_naive) - abs(bias_gformula))/abs(bias_naive):.1f}% improvement\n")
+        # else: TODO: add bias_gformula when g-formula computed
+
+        # Study implications
+        f.write('\nSTUDY IMPLICATIONS:\n')
+        f.write('- Observational studies with biased treatment assignment can lead to\n')
+        f.write('  severely misleading conclusions about treatment effectiveness\n')
+        f.write('- G-formula/parametric g-computation can correct for confounding\n')
+        f.write('  when all confounders are measured and properly modeled\n')
+        f.write('- This simulation validates the causal inference methodology\n')
+        f.write('  for use in real clinical data analysis\n')
+
+        # Methods summary
+        f.write('\nMETHODS:\n')
+        f.write('- Data generation: Discrete-time hazard models with PKPD dynamics\n')
+        f.write('- Treatment assignment: Biased based on age, SOFA, disease severity\n')
+        f.write('- Causal inference: G-formula with estimated parameters\n')
+        f.write('- Comparison: RCT (truth) vs Naive analysis vs G-formula\n')
+
+    print(f"\nTrial simulation results exported to: {_filename}")
+except Exception as _exc:
+    print(f"WARNING: Failed to export trial simulation results text file: {_exc}")

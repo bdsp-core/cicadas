@@ -1,0 +1,29 @@
+==========================================================
+OBSERVATIONAL NAIVE ANALYSIS RESULTS FOR PAPER
+Generated on: 2026-04-19T23:28:16
+==========================================================
+
+STUDY CHARACTERISTICS:
+- Study type: Observational (RCT=0)
+- Analysis method: Naive Kaplan-Meier
+- Sample size: 2000 patients
+- Study period: 168 hours
+- Data file: trialData0.csv
+
+TREATMENT ASSIGNMENT (Biased):
+- Treated patients: 1434 (71.7%)
+- Untreated patients: 566 (28.3%)
+
+SURVIVAL OUTCOMES COMPARISON (168 hours):
+- RCT (Ground Truth): Untreated 31.2%, Treated 46.0%, ATE 14.8%
+- Naive Observational: Untreated 46.7%, Treated 42.0%, ATE -4.8%
+
+BIAS QUANTIFICATION:
+- Untreated survival bias: +15.5%
+- Treated survival bias:   -4.1%
+- ATE bias:                -19.6%
+
+FIGURE GENERATION:
+- Output file: Fig4_swimmer_survival_plot_Obs_Naive.pdf
+- Format: PDF vector graphics (300 DPI)
+- Dimensions: 6 x 9 inches

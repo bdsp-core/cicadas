@@ -4,3 +4,4 @@ pandas>=2.1
 matplotlib>=3.8
 statsmodels>=0.14
 lifelines>=0.27
+h5py>=3.9            # for reading MATLAB v7.3 .mat files (optional)

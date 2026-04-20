@@ -1,0 +1,87 @@
+==========================================================
+OPTIMIZATION CURVE ANALYSIS RESULTS FOR PAPER
+Generated on: 19-Apr-2026 00:18:34
+==========================================================
+
+STUDY CHARACTERISTICS:
+- Analysis: Treatment threshold optimization with bootstrap
+- Data sources: A01Data.mat, ThreeCurves.mat
+- Bootstrap samples: 1000
+- Threshold range: 0.000 to 1.000 (50 levels)
+- Key thresholds analyzed: 0.00, 0.02, 0.10, 0.80
+
+OPTIMAL THRESHOLD ANALYSIS:
+- Optimal threshold (G-formula): 0.020
+- Maximum ATE: 0.203 [95% CI: 0.165, 0.243]
+- Optimization method: Bootstrap-based grid search
+
+ATE RESULTS AT KEY THRESHOLDS:
+Threshold    ATE          95%% CI              Interpretation 
+---------    ---          -----                -------------- 
+0.00         -0.089       [-0.111  ,-0.068  ] Harmful        
+0.02         0.203        [0.165   ,0.243   ] Beneficial     
+0.10         0.036        [0.005   ,0.065   ] Beneficial     
+0.80         -0.000       [-0.029  ,0.031   ] Harmful        
+
+SURVIVAL OUTCOMES AT KEY THRESHOLDS (168 hours):
+Threshold    Obs Untrt    Obs Treat    RCT Untrt    RCT Treat   
+---------    ----------   ----------   ----------   ----------  
+0.00         0.313        0.232        0.307        0.249       
+0.02         0.274        0.771        0.301        0.723       
+0.10         0.318        0.443        0.324        0.442       
+0.80         0.302        0.319        0.323        0.306       
+
+THRESHOLD STRATEGY ANALYSIS:
+Treatment strategy implications:
+- θ = 0.00 (treat all): Universal treatment regardless of disease level
+  → Results in 8.9% survival harm
+- θ = 0.02 (aggressive): Treat patients with minimal disease burden
+  → Results in 20.3% survival benefit
+- θ = 0.10 (moderate): Standard treatment threshold
+  → Results in 3.6% survival benefit
+- θ = 0.80 (restrictive): Treat only severely ill patients
+  → Results in 0.0% survival harm
+
+OPTIMIZATION CURVE CHARACTERISTICS:
+- ATE range across thresholds: 0.292 (29.2% points)
+- ATE standard deviation: 0.039
+- Curve shape: Strong threshold dependence
+- Plateau regions (low gradient): 88% of threshold range
+  → Treatment benefit is relatively STABLE across thresholds
+
+BOOTSTRAP UNCERTAINTY ANALYSIS:
+Uncertainty at optimal threshold:
+- Coefficient of variation: 9.9%
+- 95% CI width: 0.078 (7.8% points)
+- Precision: MODERATE (CI width 5-10% points)
+
+CLINICAL RECOMMENDATIONS:
+Safety assessment:
+- Thresholds with CI lower bound > 0: 5/50 (10.0%)
+  → Treatment safety is THRESHOLD-DEPENDENT - careful selection required
+
+Recommended strategy:
+✓ USE optimal threshold θ = 0.020
+  - Well-defined optimum with good precision
+  - Expected ATE: 20.3% survival benefit
+
+FIGURE INTERPRETATION GUIDE:
+Main optimization curve:
+- X-axis: Treatment threshold (θ) from 0 to 1.00
+- Y-axis: Average Treatment Effect (survival difference)
+- Blue curve: G-formula estimates with 95% confidence band
+- Peak: Optimal threshold at θ = 0.020
+
+Survival inset subplots:
+- Show individual survival curves for 4 key thresholds
+- Solid lines: Observational estimates (G-formula corrected)
+- Dashed lines: RCT ground truth for comparison
+- Connected to main plot via gray lines
+
+TECHNICAL DETAILS:
+- Figure output: Fig_optimization_curves_with_survival.pdf
+- Format: PDF vector graphics (300 DPI)
+- Dimensions: 10 × 8 inches
+- Layout: 4 survival insets above main optimization curve
+- Colors: Blue tones consistent with other figures
+- Statistical method: Bootstrap percentiles for confidence intervals

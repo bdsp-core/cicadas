@@ -138,10 +138,10 @@ def fcnEstimateKe_Standalone(L_obs: np.ndarray, A_obs: np.ndarray, *args, **kwar
     # --------------------------
     if len(v) > 10:
         n_boot = 1000
-        rng = np.random.default_rng()
         boot_vals = np.empty(n_boot, dtype=float)
+        # np.random.choice draws from global seed — matches MATLAB randsample.
         for b in range(n_boot):
-            idx = rng.choice(len(v), size=len(v), replace=True)
+            idx = np.random.choice(len(v), size=len(v), replace=True)
             boot_vals[b] = _weightedMedian(v[idx], w[idx])
         ci_95 = np.percentile(boot_vals, [2.5, 97.5])
     else:

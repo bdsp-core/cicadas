@@ -1,0 +1,11 @@
+Measurement-error sensitivity (L_t perturbed with N(0, sigma^2))
+N seeds per sigma: 3
+RCT truth ATE: +0.189
+
+sigma    mean ATE     SD ATE       mean bias   
+0.000          +0.209        0.022       +0.020
+0.010          +0.163        0.024       -0.026
+0.025          +0.126        0.026       -0.063
+0.050          +0.188        0.014       -0.001
+0.100          +0.184        0.014       -0.005
+0.200          +0.023        0.034       -0.166

@@ -8,6 +8,7 @@ import time
 import numpy as np
 import pandas as pd
 from scipy.io import loadmat, savemat
+from datetime import datetime
 
 # Optional: mirror MATLAB's rng(0) for reproducibility of any randomness inside estimators
 np.random.seed(0)
@@ -451,3 +452,178 @@ print("\n==========================================================")
 print("RESULTS SAVED TO: PKPD_estimation_results.mat")
 print("Run a1_EvaluatePKPD_estimates.m for plots and detailed analysis")
 print("==========================================================")
+
+# ---------------------------------------------------------------------
+# Export PKPD estimation results to text file for paper
+# (Ported from matlab/a1_EstimatePKPD.m:343-521)
+# ---------------------------------------------------------------------
+try:
+    _now = datetime.now()
+    _filename = f"pkpd_estimation_results_{_now.strftime('%Y%m%d_%H%M%S')}.txt"
+    with open(_filename, 'w') as f:
+        f.write('==========================================================\n')
+        f.write('PKPD PARAMETER ESTIMATION RESULTS FOR PAPER\n')
+        f.write(f"Generated on: {_now.strftime('%d-%b-%Y %H:%M:%S')}\n")
+        f.write('==========================================================\n\n')
+
+        # Study parameters
+        f.write('STUDY PARAMETERS:\n')
+        f.write(f"- Sample size: {N} patients\n")
+        f.write(f"- Time points per patient: {T_len}\n")
+        f.write('- Study period: 168 hours\n')
+        f.write(f"- Time step: {dt} hours\n")
+        f.write('- Data type: Dose-switching simulation\n\n')
+
+        # True parameter values
+        f.write('TRUE PARAMETER VALUES:\n')
+        for i, pname in enumerate(param_names):
+            f.write(f"  {pname}: {true_params[i]:.4f}\n")
+        f.write('\n')
+
+        # Method comparison table
+        f.write('ESTIMATION METHOD COMPARISON:\n')
+        f.write(f"{'Method':<25s} {'MAPE(%)':>10s} {'ke Err(%)':>10s} {'L0 Corr':>10s} {'Time(s)':>10s} {'Status':>10s}\n")
+        f.write(f"{'-'*25:<25s} {'-'*10:>10s} {'-'*10:>10s} {'-'*8:>10s} {'-'*7:>10s} {'-'*10:>10s}\n")
+
+        methods_data = [
+            ('Joint (Unfixed ke)', mape_joint, errors_joint[6], corr_joint, time_joint, 'Standard'),
+            ('Oracle (True ke)', mape_oracle, 0.0, corr_oracle, time_oracle, 'Reference'),
+            ('Two-Stage (Raw)', mape_twostage_raw, errors_twostage_raw[6], corr_twostage_raw, time_twostage_raw, 'Biased'),
+            ('Two-Stage (Corrected)', mape_twostage_corr, errors_twostage_corr[6], corr_twostage_corr, time_twostage_corr, 'Preferred'),
+        ]
+        for name, mape_v, ke_err_v, corr_v, time_v, status_v in methods_data:
+            f.write(f"{name:<25s} {mape_v:>10.1f} {ke_err_v:>10.1f} {corr_v:>10.3f} {time_v:>10.1f} {status_v:>10s}\n")
+
+        # Best method identification
+        mape_list = [mape_joint, mape_oracle, mape_twostage_raw, mape_twostage_corr]
+        best_idx0 = int(np.argmin(mape_list))  # 0-based
+        best_mape = mape_list[best_idx0]
+        best_method_names = ['Joint', 'Oracle', 'Two-Stage Raw', 'Two-Stage Corrected']
+        f.write(f"\nBEST PERFORMING METHOD: {best_method_names[best_idx0]} (MAPE: {best_mape:.1f}%)\n\n")
+
+        # Detailed parameter estimates for best non-oracle method
+        if best_idx0 == 1:  # Oracle is best
+            f.write('DETAILED ESTIMATES (Two-Stage Corrected - Best Practical Method):\n')
+            best_theta = theta_twostage_corr_full
+            best_errors = errors_twostage_corr
+        else:
+            f.write(f"DETAILED ESTIMATES ({best_method_names[best_idx0]}):\n")
+            if best_idx0 == 0:
+                best_theta = theta_joint[:7]
+                best_errors = errors_joint
+            elif best_idx0 == 2:
+                best_theta = theta_twostage_raw_full
+                best_errors = errors_twostage_raw
+            else:
+                best_theta = theta_twostage_corr_full
+                best_errors = errors_twostage_corr
+
+        f.write(f"{'Parameter':<12s} {'True Value':>12s} {'Estimate':>12s} {'Error(%)':>12s}\n")
+        f.write(f"{'-'*12:<12s} {'-'*12:>12s} {'-'*12:>12s} {'-'*12:>12s}\n")
+        for i, pname in enumerate(param_names):
+            f.write(f"{pname:<12s} {true_params[i]:>12.4f} {best_theta[i]:>12.4f} {best_errors[i]:>12.1f}\n")
+
+        # Parameter estimation accuracy by category
+        parms_PD_errors = best_errors[:6]
+        ke_error = best_errors[6]
+
+        f.write('\nPARAMETER ACCURACY BY CATEGORY:\n')
+        f.write(f"- PKPD parameters (C,g coefficients): MAPE = {np.mean(parms_PD_errors):.1f}%\n")
+        f.write(f"- Elimination constant (ke): Error = {ke_error:.1f}%\n")
+
+        # L0 trajectory recovery
+        f.write('\nL0 TRAJECTORY RECOVERY:\n')
+        f.write(f"- Correlation with true L0: {corr_twostage_corr:.3f}\n")
+        f.write(f"- RMSE: {rmse_twostage_corr:.4f}\n")
+
+        # L prediction accuracy
+        f.write('\nL PREDICTION ACCURACY (Two-Stage Corrected):\n')
+        _mape_true_mean = np.mean(mape_L_trueL0[mape_L_trueL0 < 100])
+        _mape_est_mean = np.mean(mape_L_estL0[mape_L_estL0 < 100])
+        f.write(f"- Using true L0 trajectories: {_mape_true_mean:.1f}% MAPE\n")
+        f.write(f"- Using estimated L0 trajectories: {_mape_est_mean:.1f}% MAPE\n")
+
+        # Method-specific insights
+        f.write('\nMETHOD-SPECIFIC INSIGHTS:\n')
+
+        # Joint
+        f.write('Joint Estimation (Unfixed ke):\n')
+        f.write('  - Estimates all 7 parameters simultaneously\n')
+        f.write(f"  - MAPE: {mape_joint:.1f}%, Time: {time_joint:.1f} seconds\n")
+        if mape_joint < 10:
+            f.write('  - Accurate approach\n')
+        else:
+            f.write('  - Challenging approach\n')
+
+        # Oracle
+        f.write('Oracle (Fixed True ke):\n')
+        f.write(f"  - Uses true ke value ({ke:.3f})\n")
+        f.write(f"  - MAPE: {mape_oracle:.1f}%, Time: {time_oracle:.1f} seconds\n")
+        f.write('  - Represents best possible performance\n')
+
+        # Two-stage
+        ke_raw_error = abs(ke_raw - ke) / ke * 100.0
+        ke_corr_error = abs(ke_corrected - ke) / ke * 100.0
+        f.write('Two-Stage Approaches:\n')
+        f.write(f"  - Raw ke estimate: {ke_raw:.3f} ({ke_raw_error:.1f}% error)\n")
+        f.write(f"  - Corrected ke estimate: {ke_corrected:.3f} ({ke_corr_error:.1f}% error)\n")
+        f.write('  - Bias correction factor: 1.41\n')
+        if ke_corr_error < ke_raw_error:
+            f.write('  - Significant improvement with correction\n')
+        else:
+            f.write('  - Limited improvement with correction\n')
+
+        # Computational efficiency
+        total_time = time_joint + time_oracle + time_twostage_raw + time_twostage_corr
+        f.write('\nCOMPUTATIONAL EFFICIENCY:\n')
+        f.write(f"- Total computation time: {total_time:.1f} seconds\n")
+        f.write(f"- Fastest method: Oracle ({time_oracle:.1f} s)\n")
+        f.write(f"- Most practical: Two-Stage Corrected ({time_twostage_corr:.1f} s)\n")
+
+        # Clinical implications
+        f.write('\nCLINICAL IMPLICATIONS:\n')
+        if mape_twostage_corr < 15:
+            f.write('- Parameter estimation accuracy is EXCELLENT (MAPE < 15%)\n')
+        elif mape_twostage_corr < 25:
+            f.write('- Parameter estimation accuracy is GOOD (MAPE < 25%)\n')
+        else:
+            f.write('- Parameter estimation requires improvement (MAPE >= 25%)\n')
+
+        if corr_twostage_corr > 0.8:
+            l0_quality = 'EXCELLENT'
+        elif corr_twostage_corr > 0.6:
+            l0_quality = 'GOOD'
+        else:
+            l0_quality = 'MODERATE'
+        f.write(f"- L0 trajectory recovery is {l0_quality} (correlation = {corr_twostage_corr:.3f})\n")
+        f.write('- Method is suitable for real-world PKPD analysis\n')
+
+        # Recommendations
+        f.write('\nRECOMMENDATIONS:\n')
+        if best_idx0 == 3:
+            f.write('+ Use Two-Stage Estimation with Bias Correction\n')
+            f.write('  - Balances accuracy and computational efficiency\n')
+            f.write('  - Corrects for systematic bias in ke estimation\n')
+            f.write('  - Provides reliable parameter estimates\n')
+        elif best_idx0 == 0:
+            f.write('+ Use Joint Estimation (all parameters)\n')
+            f.write('  - Most flexible approach\n')
+            f.write('  - No assumptions about ke value\n')
+            f.write('  - Higher computational cost but better accuracy\n')
+
+        f.write('\nFor real clinical data:\n')
+        f.write('- Validate ke estimates against independent PK data\n')
+        f.write('- Consider patient-specific covariates (age, organ function)\n')
+        f.write('- Use cross-validation for model selection\n')
+
+        # Technical specifications
+        f.write('\nTECHNICAL SPECIFICATIONS:\n')
+        f.write('- Estimation framework: Mixed-effects state-space modeling\n')
+        f.write('- Optimization: Expectation-maximization (EM) algorithm\n')
+        f.write('- Regularization: L2 penalty (strength = 5.0)\n')
+        f.write('- Prior information: Informative priors on all parameters\n')
+        f.write('- Convergence: Maximum 30 EM iterations\n')
+
+    print(f"PKPD estimation results exported to: {_filename}")
+except Exception as _exc:
+    print(f"WARNING: Failed to export PKPD estimation results text file: {_exc}")

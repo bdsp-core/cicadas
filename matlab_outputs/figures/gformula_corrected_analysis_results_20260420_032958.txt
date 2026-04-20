@@ -1,0 +1,128 @@
+==========================================================
+G-FORMULA CORRECTED ANALYSIS RESULTS FOR PAPER
+Generated on: 20-Apr-2026 03:29:58
+==========================================================
+
+STUDY CHARACTERISTICS:
+- Analysis method: G-formula (parametric g-computation)
+- Data source: Observational data with estimated parameters
+- Uncertainty quantification: Bootstrap confidence intervals
+- Comparison standard: RCT ground truth
+- Study period: 168 hours
+
+PRIMARY OUTCOMES COMPARISON (168 hours):
+Analysis Method      Untreated(%)    Treated(%)      ATE(%)         
+-------------------- --------------- --------------- ---------------
+RCT (Ground Truth)   31.2            46.0            14.8           
+G-formula            32.1            46.3            14.2           
+
+BIAS ASSESSMENT:
+- Untreated survival bias: +0.8% points
+- Treated survival bias: +0.2% points
+- Treatment effect bias: -0.6% points
+- Relative bias in ATE: -3.8%
+
+G-FORMULA PERFORMANCE:
+✓ EXCELLENT bias correction (<2% points)
+
+CONFIDENCE INTERVALS (95% Bootstrap):
+Untreated survival:
+  G-formula: 32.1% [28.6%, 35.5%]
+  RCT: 31.2% (point estimate)
+Treated survival:
+  G-formula: 46.3% [42.6%, 50.2%]
+  RCT: 46.0% (point estimate)
+Treatment effect (ATE):
+  G-formula: 14.2% [7.1%, 21.6%]
+  RCT: 14.8% (point estimate)
+
+COVERAGE ASSESSMENT:
+- Untreated survival CI covers RCT: YES
+- Treated survival CI covers RCT: YES
+- Treatment effect CI covers RCT: YES
+
+STATISTICAL SIGNIFICANCE:
+✓ Treatment effect is STATISTICALLY SIGNIFICANT
+  95% CI excludes zero
+
+SURVIVAL COMPARISON AT KEY TIME POINTS:
+Time(h)  RCT Untrt    G-F Untrt    RCT Trt      G-F Trt      Bias ATE    
+-------  ----------   ----------   --------     --------     --------    
+24       91.7         92.9         98.6         98.9         -0.9        
+48       61.7         65.7         94.7         95.6         -3.2        
+72       51.8         54.3         80.5         81.5         -1.4        
+96       44.1         45.9         66.9         68.1         -0.7        
+120      38.8         40.0         58.5         58.7         -1.0        
+144      34.2         35.6         51.6         51.7         -1.3        
+168      31.2         32.1         46.0         46.3         -0.6        
+
+METHODOLOGY VALIDATION:
+G-formula approach:
+- Parametric g-computation using estimated models
+- Parameter estimation from observational data
+- RCT emulation with 50% treatment probability
+- Bootstrap resampling for uncertainty quantification
+
+MODEL COMPONENTS:
+- Disease progression model (L): Estimated from observational data
+- PKPD model: Mixed-effects parameter estimation
+- Mortality hazard model (Y): Logistic regression on observational data
+- Censoring model (V): Set to zero for RCT emulation
+
+CLINICAL INTERPRETATION:
+✓ TREATMENT RECOMMENDED
+  - Statistically significant benefit observed
+  - G-formula corrects for confounding bias
+  - Number needed to treat: 7.0 patients
+
+COMPARISON WITH NAIVE ANALYSIS:
+G-formula advantages:
+- Adjusts for confounding by age, SOFA, disease severity
+- Provides unbiased treatment effect estimates
+- Includes uncertainty quantification via bootstrap
+- Enables causal interpretation of results
+
+LIMITATIONS AND ASSUMPTIONS:
+- Assumes no unmeasured confounding
+- Relies on correct model specification
+- Parameter estimation quality affects results
+- Bootstrap assumes exchangeability of patients
+- Simulation period limited to 168 hours
+
+MODEL PERFORMANCE METRICS:
+- Mean absolute bias: 0.5% points
+- Maximum absolute bias: 0.8% points
+- Coverage rate: 3/3 (100%) confidence intervals cover truth
+
+UNCERTAINTY QUANTIFICATION:
+- Untreated CI width: 6.9% points
+- Treated CI width: 7.6% points
+- Treatment effect CI width: 14.4% points
+- Precision: MODERATE (CI width 10-20% points)
+
+RESEARCH IMPLICATIONS:
+- Demonstrates effectiveness of G-formula for bias correction
+- Validates causal inference approach in PKPD context
+- Provides template for observational study analysis
+- Shows importance of uncertainty quantification
+
+FIGURE GENERATION:
+- Figure type: G-formula survival curves with confidence bands
+- Output file: Fig_gformula_corrected_survival_curves.pdf
+- Format: PDF vector graphics (300 DPI)
+- Dimensions: 7 × 5 inches
+- Features: Bootstrap confidence bands, RCT comparison
+- Colors: Blue tones with gray confidence regions
+
+TECHNICAL SPECIFICATIONS:
+- Analysis software: MATLAB
+- Bootstrap data: bootstrap_confidence_bands.mat
+- Time resolution: 2-hour intervals (85 time points)
+- Confidence level: 95% (2.5th and 97.5th percentiles)
+- Survival curves: Kaplan-Meier estimator on simulated RCT
+
+DATA SOURCES AND PROCESSING:
+- Parameter estimates: From observational data analysis
+- Bootstrap samples: Patient-level resampling
+- Simulation: RCT emulation using estimated parameters
+- Comparison: Direct comparison with RCT ground truth

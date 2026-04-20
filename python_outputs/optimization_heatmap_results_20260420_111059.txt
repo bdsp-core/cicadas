@@ -1,0 +1,129 @@
+==========================================================
+OPTIMIZATION HEATMAP ANALYSIS RESULTS FOR PAPER
+Generated on: 20-Apr-2026 11:10:59
+==========================================================
+
+STUDY PARAMETERS:
+- Sample size: 1000 patients
+- Number of trials per parameter set: 1
+- Study period: 168 hours
+- Time step: 2 hours
+- PI controller gain: 10.0
+- Maximum pump rate: 50.0
+- Elimination constant: 0.50
+
+PARAMETER OPTIMIZATION RANGES:
+- Treatment thresholds: 0.01 to 1.10 (20 levels)
+- Disease harm (a2): 1.0 to 50.0 (20 levels)
+- Treatment harm (a3): 1.0 to 50.0 (20 levels)
+- Total optimization combinations: 8000
+
+BASELINE MORTALITY PARAMETERS:
+- Baseline hazard (a0): -7.0
+- Time effect (a1): 0.30
+- Disease harm varies: 1.0 to 50.0
+- Treatment harm varies: 1.0 to 50.0
+
+SURVIVAL OUTCOME ANALYSIS:
+Optimized untreated survival (s0):
+  Range: 10.3% to 82.8%
+  Mean: 30.7% +/- 18.2%
+Optimized treated survival (s1):
+  Range: 14.3% to 90.3%
+  Mean: 42.7% +/- 22.8%
+Optimized treatment effect (ATE):
+  Range: 1.4% to 71.2%
+  Mean: 12.0% +/- 15.3%
+Optimal treatment thresholds:
+  Range: 0.010 to 1.100
+  Mean: 0.435 +/- 0.361
+
+GLOBAL OPTIMUM:
+Best parameter combination:
+  Disease harm (a2): 39.7
+  Treatment harm (a3): 1.0
+  Optimal threshold: 0.010
+  Maximum ATE: 71.2% (86.9% vs 15.6% survival)
+
+WORST CASE SCENARIO:
+Worst parameter combination:
+  Disease harm (a2): 26.8
+  Treatment harm (a3): 26.8
+  Optimal threshold: 1.043
+  Minimum ATE: 1.4% (26.4% vs 25.0% survival)
+
+TREATMENT OPTIMIZATION EFFECTIVENESS:
+After optimization, treatment is:
+  Beneficial (ATE > 0): 400/400 scenarios (100.0%)
+  Harmful (ATE < 0): 0/400 scenarios (0.0%)
+  Neutral (|ATE| < 1%): 0/400 scenarios (0.0%)
+
+HIGH-IMPACT OPTIMIZATION ZONES:
+High benefit zone (top 25% after optimization):
+  ATE threshold: >= 10.9%
+  Number of scenarios: 100 (25.0%)
+
+OPTIMAL THRESHOLD DISTRIBUTION:
+Optimal threshold preferences:
+  0.01-0.10: 127 scenarios (31.8%)
+  0.10-0.20: 20 scenarios (5.0%)
+  0.20-0.50: 89 scenarios (22.2%)
+  0.50-1.00: 132 scenarios (33.0%)
+  1.00-1.10: 32 scenarios (8.0%)
+Most common threshold range: 0.50-1.00 (33.0% of scenarios)
+
+PARAMETER SENSITIVITY FOR OPTIMIZATION:
+Disease harm (a2) vs Optimal Threshold:
+  Correlation: -0.354 (p = 0.109)
+  -> Disease harm has moderate effect on optimal thresholds
+Treatment harm (a3) vs Optimal Threshold:
+  Correlation: 0.910 (p = 0.000)
+  -> Higher treatment harm requires HIGHER optimal thresholds
+
+Disease harm (a2) vs Optimized ATE:
+  Correlation: 0.755 (p = 0.000)
+Treatment harm (a3) vs Optimized ATE:
+  Correlation: -0.733 (p = 0.000)
+
+OPTIMIZATION ROBUSTNESS:
+Optimal threshold variability: CV = 83.0%
+  -> Optimal thresholds are HIGHLY variable across parameters
+
+SAFE OPTIMIZATION ZONES:
+Conservative benefit threshold (ATE > 3%):
+  Safe scenarios: 361/400 (90.2%)
+
+CLINICAL DECISION MAKING:
++ OPTIMIZATION is broadly beneficial across parameter space
+  - Aggressive optimization strategies are safe
+  - Standard threshold optimization protocols recommended
+
+PARAMETER ESTIMATION PRIORITIES FOR OPTIMIZATION:
+1. Treatment harm parameters (a3) - highest impact on thresholds
+2. Disease harm parameters (a2)
+3. Disease harm also most critical for ATE optimization
+
+PRACTICAL OPTIMIZATION RECOMMENDATIONS:
+Robust optimization regions (above-average ATE):
+  Count: 95/400 scenarios (23.8%)
+
+For clinical implementation:
+- Use MODERATE optimization thresholds
+- Recommended threshold range: 0.067 to 0.756
+- Monitor treatment response and adjust adaptively
+- Validate optimization performance with real-world data
+
+TECHNICAL DETAILS:
+- Optimization method: Exhaustive grid search
+- Grid resolution: 20 x 20 x 20 (parameter x parameter x threshold)
+- Total evaluations: 8000
+- Optimization criterion: Maximum ATE at 168 hours
+- Simulation: RCT emulation with observational parameter estimation
+- Aggregation: Median across 1 trial(s) per combination
+
+DATA AVAILABILITY:
+- Complete optimization results saved to: HeatMapData.mat
+- s0: Optimized untreated survival matrix (20x20)
+- s1: Optimized treated survival matrix (20x20)
+- Th_opt: Optimal threshold matrix (20x20)
+- Parameter grids: A2 (disease harm), A3 (treatment harm), Th (thresholds)

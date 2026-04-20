@@ -50,6 +50,20 @@ env/
 reproduction_baseline/
 old/
 outputs/
+python.backup-*/
+
+# --- Parity-verification reference outputs ---
+# `matlab_outputs/` and `python_outputs/` are captured reference runs used by
+# `verify_parity.py` and referenced in `PARITY_REPORT.md`. We ship them so
+# reviewers can verify parity on clone without running the 4–8 h pipeline.
+# Override the globs above for these dirs (but still ignore logs and the big
+# regenerable trialData CSVs).
+!matlab_outputs/**
+!python_outputs/**
+matlab_outputs/logs/
+python_outputs/logs/
+matlab_outputs/**/trialData*.csv
+python_outputs/**/trialData*.csv
 
 # --- Working docs (not for public repo) ---
 "@-*.docx"
@@ -58,3 +72,5 @@ outputs/
 
 # --- Python & markdown auxiliary ---
 Python_And_Markdown/test_output.txt
+wait_and_verify.log
+wait_and_verify.sh

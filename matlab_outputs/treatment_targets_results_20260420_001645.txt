@@ -1,0 +1,106 @@
+==========================================================
+TREATMENT TARGETS COMPARISON RESULTS FOR PAPER
+Generated on: 20-Apr-2026 00:16:45
+==========================================================
+
+STUDY PARAMETERS:
+- Sample size: 2000 patients
+- Study period: 168 hours
+- Time step: 2 hours
+- Number of treatment targets tested: 4
+- Target thresholds: [0.00 0.02 0.10 0.80 ]
+
+TREATMENT TARGET DESCRIPTIONS:
+  Target 1: No treatment (th = 0.00) - No active disease suppression
+  Target 2: Mild treatment (th = 0.02) - Minimal disease suppression
+  Target 3: Standard treatment (th = 0.10) - Moderate disease suppression
+  Target 4: Aggressive treatment (th = 0.80) - Intensive disease suppression
+
+PARAMETER ESTIMATION ACCURACY:
+Disease progression (L) parameters:
+  growth_rate: 0.2541 (true: 0.2500, error: 1.6%)
+  peak_height: 0.9551 (true: 1.0000, error: 74.6%)
+  alpha: 0.1536 (true: 0.1500, error: 69.4%)
+  decay_rate: 0.0479 (true: 0.0500, error: 408.2%)
+  sigma_early: 0.1356 (true: 0.1500, error: 69.4%)
+  sigma_late: 0.0252 (true: 0.0300, error: 746.9%)
+  sigma_transition: 44.6251 (true: 40.0000, error: 99.4%)
+
+Mortality hazard (Y) parameters:
+  a0: -7.0934 (true: -7.0000, error: 1.3%)
+  a1: 0.3460 (true: 0.3000, error: 15.3%)
+  a2: 20.3199 (true: 20.0000, error: 1.6%)
+  a3: 5.0492 (true: 5.0000, error: 1.0%)
+Overall MAPE - L parameters: 209.9%
+Overall MAPE - L parameters: 907.3%
+Overall MAPE - L parameters: 121.0%
+Overall MAPE - L parameters: 68.0%
+Overall MAPE - L parameters: 110.6%
+Overall MAPE - L parameters: 74.2%
+Overall MAPE - L parameters: 45603.6%
+Overall MAPE - Y parameters: 4.8%
+
+TREATMENT EFFECTS COMPARISON (ATE at 168 hours):
+Target                    True ATE     Est ATE      Bias         Bias(%)     
+------------------------- ------------ ------------ ------------ ------------
+th = 0.00                      -0.079      -0.075      +0.004        +5.5
+th = 0.02                      +0.437      +0.448      +0.012        +2.6
+th = 0.10                      +0.162      +0.172      +0.010        +6.5
+th = 0.80                      +0.003      -0.009      -0.012      -391.8
+
+SURVIVAL OUTCOMES AT 168 HOURS:
+Target          Untrt(True)     Treat(True)     Untrt(Est)      Treat(Est)     
+--------------- --------------- --------------- --------------- ---------------
+th = 0.00       31.5           % 23.5           % 30.3           % 22.8           %
+th = 0.02       30.8           % 74.5           % 30.8           % 75.6           %
+th = 0.10       29.3           % 45.5           % 30.2           % 47.4           %
+th = 0.80       30.1           % 30.4           % 31.3           % 30.4           %
+
+OPTIMAL TREATMENT TARGET ANALYSIS:
+Based on TRUE parameters:
+  Optimal target: th = 0.02
+  Maximum ATE: 0.437 (43.7% survival benefit)
+  Survival rates: Untreated 30.8%, Treated 74.5%
+
+Based on ESTIMATED parameters:
+  Optimal target: th = 0.02
+  Maximum ATE: 0.448 (44.8% survival benefit)
+  Survival rates: Untreated 30.8%, Treated 75.6%
+
+TARGET SELECTION AGREEMENT:
+✓ TRUE and ESTIMATED parameters identify the same optimal target
+  → Parameter estimation is sufficient for treatment optimization
+
+BIAS ANALYSIS ACROSS TARGETS:
+Average absolute bias: 0.010 (1.0% survival difference)
+Maximum absolute bias: 0.012 at th = 0.80
+Bias vs target aggressiveness correlation: 0.821
+  → Bias INCREASES with more aggressive targets
+
+CLINICAL IMPLICATIONS:
+Treatment benefit assessment:
+  TRUE parameters: 3 beneficial, 1 harmful targets
+  ESTIMATED parameters: 2 beneficial, 2 harmful targets
+  ✗ Parameter estimation misclassifies treatment benefit
+
+SAFETY CONSIDERATIONS:
+  ⚠️  th = 0.00 appears HARMFUL (ATE = -0.079)
+
+RECOMMENDATIONS:
+✓ PROCEED with treatment optimization using estimated parameters
+  - Parameter estimation is sufficiently accurate
+  - Optimal target correctly identified
+  - Recommended target: th = 0.02
+
+General recommendations:
+- Validate parameter estimates with independent data
+- Consider dose-response relationships
+- Monitor for unintended consequences
+- Use adaptive treatment strategies
+
+TECHNICAL DETAILS:
+- Simulation: RCT emulation with 50% treatment probability
+- Endpoint: Survival probability at 168 hours
+- Target mechanism: PI controller with variable threshold
+- Parameter source: Estimated from observational data
+- Comparison: True vs estimated parameter performance

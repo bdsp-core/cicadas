@@ -1,0 +1,111 @@
+MATLAB reference run captured at Mon Apr 20 03:34:44 EDT 2026
+Seed: rng(0) inside a0/a4/fcnGeneratePatientParameters (MATLAB MT19937)
+
+== top-level ==
+A01Data.mat                                                     1750545
+EstimatedParameters.mat                                             577
+HeatMapAggressive.mat                                           1569111
+HeatMapData.mat                                                 1425415
+L0data.mat                                                       557515
+L0data_structured.mat                                            280426
+MANIFEST.txt                                                        151
+PKPD_estimation_results.mat                                     5308932
+ThreeCurves.mat                                                    9862
+bootstrap_confidence_bands.mat                                  1080538
+bootstrap_confidence_bands_v2.mat                               6000685
+causal_survival_results_20260418_221046.txt                        2476
+causal_survival_results_20260420_001629.txt                        2476
+heatmap_sensitivity_results_20260418_221432.txt                    3509
+heatmap_sensitivity_results_20260420_001925.txt                    3509
+optimal_treatment_target_results_20260420_025723.txt               3337
+optimization_heatmap_results_20260419_001610.txt                   4210
+optimization_heatmap_results_20260420_032856.txt                   4210
+parmsTrue.mat                                                     60883
+parmsTrue_DoseChanging.mat                                        30819
+parmsTrue_Structured.mat                                          15885
+pkpd_estimation_results_20260418_212813.txt                        3222
+pkpd_estimation_results_20260419_232304.txt                        3222
+pkpd_estimation_results_20260419_234207.txt                        3222
+simulation_results_20260418_212639.txt                             1817
+simulation_results_20260419_232137.txt                             1817
+simulation_results_20260419_234042.txt                             1817
+treatment_targets_results_20260418_221120.txt                      4364
+treatment_targets_results_20260419_233547.txt                      4120
+treatment_targets_results_20260420_001645.txt                      4364
+trialData0.csv                                                  6565690
+trialData1.csv                                                  7592118
+trialDataDoseChanging.csv                                       6834569
+trialDataStructured.csv                                         2812870
+trial_simulation_results_20260418_212443.txt                       2830
+trial_simulation_results_20260419_221023.txt                       2830
+trial_simulation_results_20260419_231214.txt                       2830
+trial_simulation_results_20260419_232013.txt                       2830
+trial_simulation_results_20260419_233451.txt                       2427
+trial_simulation_results_20260419_233919.txt                       2830
+
+== figures ==
+19488                                                                  
+.                                                                  1248
+..                                                                 1504
+ATE_heatmap_analysis.mat                                          10903
+Fig1_Parameter_Estimation_Errors.pdf                               5190
+Fig1_singleTrajectories_3panels.pdf                               19163
+Fig2_L_Prediction_Accuracy.pdf                                  1870509
+Fig3_gformula_corrected_survival_curves.pdf                        9652
+Fig3_swimmer_survival_plot_RCT.pdf                                63073
+Fig4_swimmer_survival_plot_Obs_Naive.pdf                          69828
+Fig_Combined_PKPD_Analysis.pdf                                    43864
+Fig_gformula_corrected_survival_curves.pdf                        16788
+Fig_heatmap_figure.pdf                                            49088
+Fig_optimization_curves_with_survival.pdf                         29778
+L0_observational.mat                                             572768
+L0data.mat                                                       557926
+PKPD_combined_figure_summary.txt                                    866
+PKPD_estimation_summary.txt                                        3006
+PKPD_publication_figures_summary.txt                                862
+ThreeCurves.mat                                                 4503138
+bootstrap_confidence_bands.mat                                  1080532
+gformula_corrected_analysis_results_20250816_225953.txt            4848
+gformula_corrected_analysis_results_20260419_001813.txt            4848
+gformula_corrected_analysis_results_20260420_032958.txt            4848
+ground_truth_km_logit.mat                                          1230
+observational_naive_analysis_results_20250817_213516.txt           4982
+observational_naive_analysis_results_20250818_105940.txt           5701
+observational_naive_analysis_results_20260419_001802.txt           5701
+observational_naive_analysis_results_20260420_032949.txt           5701
+optimization_curve_analysis_results_20250816_230027.txt            3529
+optimization_curve_analysis_results_20260419_001834.txt            3529
+parmsTrue.mat                                                     60883
+parmsTrue_DoseChanging.mat                                        30830
+rct_swimmer_analysis_results_20250817_212215.txt                   3458
+rct_swimmer_analysis_results_20260419_001747.txt                   3458
+rct_swimmer_analysis_results_20260420_032932.txt                   3458
+swimmer_survival_plot.pdf                                        268047
+swimmer_survival_plot_Obs.pdf                                    297096
+swimmer_survival_plot_RCT.pdf                                    280891
+test.pdf                                                           2028
+
+== sens_alt_censoring ==
+48                                                                     
+.                                                                   160
+..                                                                 1504
+Fig_alt_censoring.pdf                                             14474
+alt_censoring_results.mat                                           707
+alt_censoring_summary.txt                                           337
+
+== sens_measurement_error ==
+56                                                                     
+.                                                                   160
+..                                                                 1504
+Fig_measurement_error.pdf                                         18253
+measurement_error_results.mat                                       794
+measurement_error_summary.txt                                       445
+
+== sens_nuc_injection ==
+112                                                                    
+.                                                                   160
+..                                                                 1504
+Fig_NUC_sensitivity.pdf                                           46436
+nuc_results.mat                                                    3996
+nuc_summary.txt                                                     531
+

@@ -1,0 +1,28 @@
+==========================================================
+PKPD PUBLICATION FIGURES: SUMMARY OUTPUT
+==========================================================
+
+Generated: 20-Apr-2026 03:29:20
+Source script: Combined PKPD Analysis Figure
+Source data: PKPD_estimation_results.mat
+
+FIGURES GENERATED:
+  - Fig_Combined_PKPD_Analysis.pdf
+  - Fig_Combined_PKPD_Analysis.png
+
+KEY RESULTS:
+  Best Method: Two-Stage with Bias Correction
+  - MAE: 0.4% (vs 28.0% for joint estimation)
+  - Improvement: 63-fold
+  - ke estimation error: 2.0% (after correction)
+
+L PREDICTION ACCURACY:
+  - With true L0: 0.004 MAE
+  - With estimated L0: available in results
+
+L0 RECOVERY:
+  - Correlation: 0.558 (moderate due to high suppression)
+  - This is expected and does not affect L prediction
+
+Figures saved as PDF and PNG files.
+==========================================================

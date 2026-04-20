@@ -1,0 +1,29 @@
+==========================================================
+RCT SWIMMER PLOT ANALYSIS RESULTS FOR PAPER
+Generated on: 2026-04-20T11:11:03
+==========================================================
+
+RCT DATA CHARACTERISTICS:
+- Sample size: 2000 patients
+- Study type: Randomized Controlled Trial (RCT=1)
+- Study period: 168 hours
+- Data file: trialData1.csv
+
+TREATMENT ASSIGNMENT:
+- Treated patients: 1054 (52.7%)
+- Untreated patients: 946 (47.3%)
+- Assignment method: Randomized (50% probability)
+
+PRIMARY ENDPOINT (168 hours):
+- Untreated survival: 30.4%
+- Treated survival: 49.3%
+- Average Treatment Effect (ATE): 18.9% points
+
+MORTALITY:
+- Untreated deaths: 658/946 (69.6%)
+- Treated deaths: 534/1054 (50.7%)
+
+FIGURE GENERATION:
+- Output file: Fig3_swimmer_survival_plot_RCT.pdf
+- Format: PDF vector graphics (300 DPI)
+- Dimensions: 6 x 9 inches

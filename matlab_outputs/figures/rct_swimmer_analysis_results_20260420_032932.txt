@@ -1,0 +1,93 @@
+==========================================================
+RCT SWIMMER PLOT ANALYSIS RESULTS FOR PAPER
+Generated on: 20-Apr-2026 03:29:32
+==========================================================
+
+RCT DATA CHARACTERISTICS:
+- Sample size: 2000 patients
+- Study type: Randomized Controlled Trial (RCT=1)
+- Study period: 168 hours
+- Data file: trialData1.csv
+
+TREATMENT ASSIGNMENT:
+- Treated patients: 1008 (50.4%)
+- Untreated patients: 992 (49.6%)
+- Assignment method: Randomized (50% probability)
+
+SURVIVAL OUTCOMES AT KEY TIME POINTS:
+Time(h)  Untreated(%)    Treated(%)      Difference(%)  
+-------  -------------   -----------     -------------  
+24       91.7            98.6            6.9            
+48       61.7            94.7            33.0           
+72       51.8            80.5            28.6           
+96       44.1            66.9            22.8           
+120      38.8            58.5            19.7           
+144      34.2            51.6            17.4           
+168      31.2            46.0            14.8           
+
+PRIMARY ENDPOINT (168 hours):
+- Untreated survival: 31.2%
+- Treated survival: 46.0%
+- Average Treatment Effect (ATE): 14.8% points
+- Treatment effect: BENEFICIAL
+- Effect size: LARGE (>10% points)
+
+ADDITIONAL SURVIVAL METRICS:
+- Untreated deaths: 682/992 (68.8%)
+- Treated deaths: 544/1008 (54.0%)
+- Relative risk of death: 0.78
+- Number needed to treat (NNT): 6.8 patients
+- Untreated incidence rate: 7.36 deaths per 1000 patient-hours
+- Treated incidence rate: 4.27 deaths per 1000 patient-hours
+
+SURVIVAL CURVE CHARACTERISTICS:
+- Median survival (untreated): 78.0 hours
+- Median survival (treated): 152.0 hours
+- Mean survival time (untreated): 92.7 hours
+- Mean survival time (treated): 125.8 hours
+- Difference in mean survival: 33.1 hours
+
+RCT DESIGN AND VALIDITY:
+- Randomization: Balanced (50% allocation probability)
+- Blinding: Not applicable (treatment intervention)
+- Follow-up: Complete (168 hours for all patients)
+- Primary endpoint: Survival at 168 hours
+- Analysis: Kaplan-Meier survival analysis
+- Treatment assignment balance: 16 patient difference
+  → EXCELLENT randomization balance
+
+STATISTICAL CONSIDERATIONS:
+- Sample size: 2000 patients (adequate for pilot study)
+- Effect size observed: 14.8% points
+- Clinical significance: Clinically meaningful
+
+FIGURE GENERATION:
+- Figure type: Combined swimmer plots and survival curves
+- Output file: Fig3_swimmer_survival_plot_RCT.pdf
+- Format: PDF vector graphics (300 DPI)
+- Dimensions: 6 × 9 inches
+- Curve colors: Blue tones (untreated: medium blue, treated: dark blue)
+- Data visualization: Individual patient trajectories + survival curves
+
+DATA QUALITY ASSESSMENT:
+- Total observations: 111985
+- Patients with data: 2000/2000 (100.0%)
+- Average observations per patient: 56.0
+
+CLINICAL IMPLICATIONS:
+✓ STRONG evidence for treatment benefit
+  - Consider implementation in clinical practice
+  - RCT provides unbiased treatment effect estimate
+
+RESEARCH IMPLICATIONS:
+- RCT provides gold standard comparator for observational studies
+- Treatment effect estimate is unbiased by confounding
+- Results validate causal inference methods when they agree
+- Swimmer plots show individual patient response patterns
+
+TECHNICAL SPECIFICATIONS:
+- Analysis software: MATLAB
+- Survival analysis: fcnPlotKM function
+- Visualization: fcnSingleSwimmerPlot_v4 function
+- Time resolution: 2-hour intervals
+- Statistical method: Kaplan-Meier estimator

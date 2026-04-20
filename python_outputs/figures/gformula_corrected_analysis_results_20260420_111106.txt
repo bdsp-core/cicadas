@@ -1,0 +1,25 @@
+==========================================================
+G-FORMULA CORRECTED ANALYSIS RESULTS FOR PAPER
+Generated on: 2026-04-20T11:11:06
+==========================================================
+
+STUDY CHARACTERISTICS:
+- Analysis method: G-formula (parametric g-computation)
+- Data source: Observational data with estimated parameters
+- Uncertainty: Bootstrap 95% confidence intervals
+- Comparison: RCT ground truth
+- Study period: 168 hours
+
+PRIMARY OUTCOMES (168 hours):
+- RCT (Ground Truth): Untreated 30.4%, Treated 49.3%, ATE 18.9%
+- G-formula:          Untreated 30.5% [27.5, 33.6], Treated 44.6% [41.3, 48.0], ATE 14.1% [7.7, 20.5]
+
+BIAS ASSESSMENT:
+- Untreated survival bias: +0.1%
+- Treated survival bias:   -4.7%
+- ATE bias:                -4.8%
+
+FIGURE GENERATION:
+- Output file: Fig_gformula_corrected_survival_curves.pdf
+- Format: PDF vector graphics (300 DPI)
+- Dimensions: 7 x 5 inches

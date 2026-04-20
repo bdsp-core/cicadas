@@ -1,0 +1,108 @@
+==========================================================
+HEATMAP SENSITIVITY ANALYSIS RESULTS FOR PAPER
+Generated on: 20-Apr-2026 00:19:25
+==========================================================
+
+STUDY PARAMETERS:
+- Sample size: 1000 patients
+- Number of trials per parameter set: 1
+- Study period: 168 hours
+- Time step: 2 hours
+- Control target threshold: 0.10
+- PI controller gain: 10.0
+- Maximum pump rate: 50.0
+- Elimination constant: 0.50
+
+PARAMETER SENSITIVITY RANGES:
+- Harm from disease (a2): 1.0 to 50.0 (20 levels)
+- Harm from treatment (a3): 1.0 to 50.0 (20 levels)
+- Total parameter combinations: 400
+
+BASELINE MORTALITY PARAMETERS:
+- Baseline hazard (a0): -7.0
+- Time effect (a1): 0.30
+- Disease harm varies: 1.0 to 50.0
+- Treatment harm varies: 1.0 to 50.0
+
+SURVIVAL OUTCOME RANGES:
+Untreated survival (s0):
+  Range: 11.4% to 86.7%
+  Mean: 33.3% ± 18.8%
+Treated survival (s1):
+  Range: 7.5% to 93.5%
+  Mean: 33.5% ± 18.7%
+Treatment effect (ATE):
+  Range: -39.3% to 26.7%
+  Mean: 0.2% ± 10.1%
+
+OPTIMAL TREATMENT ZONES:
+Best treatment scenario:
+  Parameters: Disease harm = 11.3, Treatment harm = 1.0
+  ATE: 26.7% (73.0% vs 46.3% survival)
+Worst treatment scenario:
+  Parameters: Disease harm = 1.0, Treatment harm = 50.0
+  ATE: -39.3% (45.1% vs 84.4% survival)
+
+TREATMENT BENEFIT ANALYSIS:
+Scenarios where treatment is:
+  Beneficial (ATE > 0): 189/400 (47.2%)
+  Harmful (ATE < 0): 211/400 (52.8%)
+  Neutral (|ATE| < 1%): 42/400 (10.5%)
+
+PARAMETER SENSITIVITY:
+Disease harm (a2) vs Treatment Effect:
+  Correlation: 0.441 (p = 0.052)
+  → Disease harm has moderate effect on treatment benefit
+Treatment harm (a3) vs Treatment Effect:
+  Correlation: -0.987 (p = 0.000)
+  → Higher treatment harm REDUCES treatment benefit
+
+RISK-BENEFIT ZONES:
+High benefit zone (top 25% of scenarios):
+  ATE threshold: ≥ 6.6%
+  Number of scenarios: 100
+High risk zone (bottom 25% of scenarios):
+  ATE threshold: ≤ -5.4%
+  Number of scenarios: 100
+
+CLINICAL DECISION MAKING:
+Treatment recommendations:
+  Safe treatment zone (ATE > 5%): 122 scenarios (30.5%)
+  Dangerous treatment zone (ATE < -2%): 163 scenarios (40.8%)
+
+PARAMETER ESTIMATION IMPLICATIONS:
+For clinical implementation:
+- Accurate estimation of disease harm (a2) is IMPORTANT
+- Accurate estimation of treatment harm (a3) is CRITICAL
+- Treatment can be harmful - careful parameter estimation required
+
+ROBUST TREATMENT STRATEGIES:
+Robust benefit regions (ATE > 2% regardless of exact parameters):
+  Count: 166/400 scenarios (41.5%)
+  → Treatment benefit is SENSITIVE to parameter values
+
+PRACTICAL RECOMMENDATIONS:
+For clinical practice:
+⚠️  Treatment benefit is parameter-dependent
+  - Invest in accurate parameter estimation
+  - Consider adaptive treatment protocols
+  - Monitor for treatment-related harm
+
+For parameter estimation:
+- Priority should be given to accurate estimation of:
+  1. Treatment harm parameters (higher impact)
+  2. Disease harm parameters
+
+TECHNICAL DETAILS:
+- Analysis type: Grid search sensitivity analysis
+- Grid resolution: 20 × 20 parameter combinations
+- Mortality model: Logistic hazard with time-varying effects
+- Treatment assignment: 50% randomization (RCT simulation)
+- Endpoint: Survival probability at 168 hours
+- Aggregation: Median across 1 trial(s) per parameter set
+
+DATA AVAILABILITY:
+- Complete results saved to: HeatMapAggressive.mat
+- Survival matrices: s0 (untreated), s1 (treated)
+- Parameter grids: A2 (disease harm), A3 (treatment harm)
+- Optimal thresholds: Th_opt (if computed)

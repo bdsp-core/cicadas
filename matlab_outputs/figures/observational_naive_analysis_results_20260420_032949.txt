@@ -1,0 +1,138 @@
+==========================================================
+OBSERVATIONAL NAIVE ANALYSIS RESULTS FOR PAPER
+Generated on: 20-Apr-2026 03:29:49
+==========================================================
+
+STUDY CHARACTERISTICS:
+- Study type: Observational (RCT=0)
+- Analysis method: Naive Kaplan-Meier
+- Sample size: 2000 patients
+- Study period: 168 hours
+- Data file: trialData0.csv
+
+TREATMENT ASSIGNMENT (Biased):
+- Treated patients: 1434 (71.7%)
+- Untreated patients: 566 (28.3%)
+- Assignment method: Biased based on age, SOFA, disease severity
+- Note: This creates confounding bias in naive analysis
+
+CONFOUNDING BY INDICATION STATISTICS:
+Mean disease severity (first 20 hours):
+- Treated patients: 0.0347 ± 0.0321
+- Untreated patients: 0.0181 ± 0.0368
+- Fold difference: 1.9x higher in treated patients
+Maximum disease severity (first 20 hours):
+- Treated patients: 0.1220 ± 0.1108
+- Untreated patients: 0.0718 ± 0.1267
+- Fold difference: 1.7x higher in treated patients
+Disease progression rates (first 20 hours):
+- Treated patients: 0.00344 ± 0.00325 per hour
+- Untreated patients: 0.00288 ± 0.00608 per hour
+- Fold difference: 1.2x faster in treated patients
+Treatment probability statistics:
+- Mean assignment probability: 0.717 (71.7%)
+- This represents substantial deviation from 50% randomized assignment
+
+TREATMENT ASSIGNMENT BIAS:
+- Expected treated (50% RCT): 1000 patients
+- Actual treated (biased): 1434 patients
+- Assignment bias: +434 patients (43.4% deviation)
+
+SURVIVAL OUTCOMES COMPARISON:
+Analysis Method      Untreated(%)    Treated(%)      ATE(%)         
+-------------------- --------------- --------------- ---------------
+RCT (Ground Truth)   31.2            46.0            14.8           
+Naive Observational  46.7            42.0            -4.8           
+
+BIAS QUANTIFICATION:
+- Untreated survival bias: +15.5% points
+- Treated survival bias: -4.1% points
+- Treatment effect bias: -19.6% points
+- Relative bias in ATE: -132.3%
+
+CLINICAL SIGNIFICANCE OF BIAS:
+⚠️  SEVERE bias (>10% points) - naive analysis highly misleading
+🚨 CRITICAL: Bias changes treatment effect DIRECTION!
+   Naive analysis suggests harm, but treatment is actually beneficial
+   → This could lead to dangerous clinical decisions
+
+MORTALITY ANALYSIS:
+Naive observational data:
+- Untreated deaths: 215/566 (38.0%)
+- Treated deaths: 609/1434 (42.5%)
+- Naive relative risk: 1.12
+
+SURVIVAL COMPARISON AT KEY TIME POINTS:
+Time(h)  RCT Untrt    Naive Untrt  RCT Trt      Naive Trt    Bias ATE    
+-------  ----------   -----------  --------     ---------    --------    
+24       91.7         98.0         98.6         99.0         -5.9        
+48       61.7         82.1         94.7         95.3         -19.8       
+72       51.8         72.0         80.5         77.4         -23.3       
+96       44.1         63.3         66.9         62.1         -24.0       
+120      38.8         57.0         58.5         53.2         -23.5       
+144      34.2         51.8         51.6         46.5         -22.7       
+168      31.2         N/A          46.0         N/A          N/A         
+
+CONFOUNDING ANALYSIS:
+Sources of confounding in observational data:
+- Age: Older, sicker patients more likely to receive treatment
+- SOFA score: Higher severity patients preferentially treated
+- Disease severity: Initial L0 levels influence treatment decisions
+- Indication bias: Treatment given to patients most likely to benefit
+- Contraindication bias: Treatment withheld from high-risk patients
+
+STATISTICAL CONSIDERATIONS:
+- Naive Kaplan-Meier assumes random treatment assignment
+- Violation of this assumption leads to biased estimates
+- Confounders are not adjusted for in naive analysis
+- Results cannot be interpreted as causal effects
+
+COMPARISON WITH IDEAL SCENARIOS:
+Number needed to treat:
+- RCT (true): 6.8 patients
+- Naive estimate: 20.9 patients
+- Bias in NNT: +14.2 patients
+
+CLINICAL DECISION MAKING IMPLICATIONS:
+❌ DANGEROUS: Naive analysis would lead to wrong clinical decisions
+   - High risk of patient harm from biased treatment recommendations
+   - Causal inference methods are essential
+
+METHODOLOGICAL LESSONS:
+1. Observational data can be severely biased without proper adjustment
+2. Treatment assignment patterns create systematic differences between groups
+3. Naive survival analysis ignores these systematic differences
+4. RCT provides unbiased comparison for evaluating observational methods
+5. G-formula and other causal methods are needed to correct bias
+
+FIGURE GENERATION:
+- Figure type: Observational swimmer plots with naive survival curves
+- Output file: Fig4_swimmer_survival_plot_Obs_Naive.pdf
+- Format: PDF vector graphics (300 DPI)
+- Dimensions: 6 × 9 inches
+- Curve styles: Solid lines (naive), dashed lines (RCT reference)
+- Colors: Blue tones matching RCT figure for comparison
+
+DATA QUALITY AND VALIDITY:
+- Total observations: 95422
+- Patients analyzed: 2000
+- Average observations per patient: 47.7
+- Data completeness: Assumed 100% (simulation data)
+
+TREATMENT PATTERNS:
+- Patients switching treatment: 0 (0.0%)
+- Analysis method: Initial treatment assignment (as-randomized)
+- Note: Treatment switches add complexity not captured in naive analysis
+
+RESEARCH IMPLICATIONS:
+- Demonstrates the need for causal inference in observational studies
+- Quantifies the magnitude of confounding bias
+- Validates the importance of RCTs as gold standard
+- Motivates development of bias correction methods
+
+TECHNICAL SPECIFICATIONS:
+- Analysis software: MATLAB
+- Survival analysis: ecdf function with censoring
+- Visualization: fcnSingleSwimmerPlot_v4 + custom curves
+- Statistical method: Kaplan-Meier estimator
+- Censoring: Right censoring at end of observation

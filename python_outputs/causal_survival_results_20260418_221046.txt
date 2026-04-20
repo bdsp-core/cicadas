@@ -1,0 +1,74 @@
+==========================================================
+CAUSAL SURVIVAL ANALYSIS RESULTS FOR PAPER
+Generated on: 18-Apr-2026 22:10:46
+==========================================================
+
+STUDY PARAMETERS:
+- Sample size: 2000 patients
+- Study period: 168 hours
+- Bootstrap samples: 1000
+- Target threshold: 0.100
+- Time step: 2 hours
+
+ESTIMATED PARAMETERS:
+Disease progression (L) parameters:
+  parmsL[1]: 0.2541 (true: 0.2500)
+  parmsL[2]: 0.9551 (true: 1.0000)
+  parmsL[3]: 0.1536 (true: 0.1500)
+  parmsL[4]: 0.0479 (true: 0.0500)
+  parmsL[5]: 0.1356 (true: 0.1500)
+  parmsL[6]: 0.0252 (true: 0.0300)
+  parmsL[7]: 44.6251 (true: 40.0000)
+
+PKPD parameters:
+  parmsPD[1]: 2.9862 (true: 3.0000)
+  parmsPD[2]: 0.1001 (true: 0.1000)
+  parmsPD[3]: 0.1498 (true: 0.1500)
+  parmsPD[4]: 4.0038 (true: 4.0000)
+  parmsPD[5]: 0.0799 (true: 0.0800)
+  parmsPD[6]: 0.1199 (true: 0.1200)
+ke: 0.5100 (true: 0.5000)
+
+Mortality hazard parameters:
+  parmsY[1]: -7.1675 (true: -7.0000)
+  parmsY[2]: 0.4182 (true: 0.3000)
+  parmsY[3]: 20.5170 (true: 20.0000)
+  parmsY[4]: 5.1063 (true: 5.0000)
+
+SURVIVAL OUTCOMES (with 95% Bootstrap CIs):
+Time(h)  Untreated(%)    Treated(%)      Difference(%)  
+-------  -------------   -----------     -------------  
+24       92.9            99.0            6.0            
+48       65.7            95.7            30.0           
+72       54.4            81.8            27.4           
+96       46.0            68.3            22.3           
+120      40.1            59.0            18.9           
+144      35.8            52.2            16.4           
+168      32.2            46.6            14.5           
+
+PRIMARY ENDPOINT (168 hours):
+Untreated survival: 32.2% [29.1%, 35.6%]
+Treated survival: 46.6% [43.0%, 49.9%]
+
+TREATMENT EFFECT:
+Absolute risk difference: 14.5% [7.4%, 20.8%]
+Risk ratio: 1.45
+Number needed to treat: 6.9
+Interpretation: Treatment is BENEFICIAL
+
+STATISTICAL SIGNIFICANCE:
+The 95% confidence interval excludes zero → STATISTICALLY SIGNIFICANT
+
+METHODS SUMMARY:
+- Data generation: Logit-based discrete-time hazard models
+- Causal inference: G-formula/parametric g-computation
+- Parameter estimation: Mixed-effects PKPD modeling
+- Uncertainty quantification: 1000 bootstrap resamples
+- Simulation: RCT emulation with estimated parameters
+
+MODEL PERFORMANCE:
+Mean absolute percentage error (MAPE):
+- Disease parameters (L): 7.1%
+- PKPD parameters: 0.2%
+- Mortality parameters (Y): 11.6%
+- Elimination constant (ke): 2.0%

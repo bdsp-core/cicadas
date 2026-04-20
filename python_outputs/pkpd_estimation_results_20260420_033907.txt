@@ -1,0 +1,92 @@
+==========================================================
+PKPD PARAMETER ESTIMATION RESULTS FOR PAPER
+Generated on: 20-Apr-2026 03:39:07
+==========================================================
+
+STUDY PARAMETERS:
+- Sample size: 1000 patients
+- Time points per patient: 85
+- Study period: 168 hours
+- Time step: 2 hours
+- Data type: Dose-switching simulation
+
+TRUE PARAMETER VALUES:
+  b0_C: 3.0000
+  b1_C: 0.1000
+  b2_C: 0.1500
+  b0_g: 4.0000
+  b1_g: 0.0800
+  b2_g: 0.1200
+  ke: 0.5000
+
+ESTIMATION METHOD COMPARISON:
+Method                       MAPE(%)  ke Err(%)    L0 Corr    Time(s)     Status
+------------------------- ---------- ----------   --------    ------- ----------
+Joint (Unfixed ke)              29.5       37.9      0.410      131.7   Standard
+Oracle (True ke)                 0.2        0.0      0.592       31.9  Reference
+Two-Stage (Raw)                  4.3       27.4      0.671       31.4     Biased
+Two-Stage (Corrected)            0.7        2.4      0.582       32.4  Preferred
+
+BEST PERFORMING METHOD: Oracle (MAPE: 0.2%)
+
+DETAILED ESTIMATES (Two-Stage Corrected - Best Practical Method):
+Parameter      True Value     Estimate     Error(%)
+------------ ------------ ------------ ------------
+b0_C               3.0000       2.9853          0.5
+b1_C               0.1000       0.0996          0.4
+b2_C               0.1500       0.1493          0.5
+b0_g               4.0000       4.0047          0.1
+b1_g               0.0800       0.0794          0.8
+b2_g               0.1200       0.1204          0.3
+ke                 0.5000       0.5119          2.4
+
+PARAMETER ACCURACY BY CATEGORY:
+- PKPD parameters (C,g coefficients): MAPE = 0.4%
+- Elimination constant (ke): Error = 2.4%
+
+L0 TRAJECTORY RECOVERY:
+- Correlation with true L0: 0.582
+- RMSE: 0.0881
+
+L PREDICTION ACCURACY (Two-Stage Corrected):
+- Using true L0 trajectories: 47.2% MAPE
+- Using estimated L0 trajectories: 87.7% MAPE
+
+METHOD-SPECIFIC INSIGHTS:
+Joint Estimation (Unfixed ke):
+  - Estimates all 7 parameters simultaneously
+  - MAPE: 29.5%, Time: 131.7 seconds
+  - Challenging approach
+Oracle (Fixed True ke):
+  - Uses true ke value (0.500)
+  - MAPE: 0.2%, Time: 31.9 seconds
+  - Represents best possible performance
+Two-Stage Approaches:
+  - Raw ke estimate: 0.363 (27.4% error)
+  - Corrected ke estimate: 0.512 (2.4% error)
+  - Bias correction factor: 1.41
+  - Significant improvement with correction
+
+COMPUTATIONAL EFFICIENCY:
+- Total computation time: 227.5 seconds
+- Fastest method: Oracle (31.9 s)
+- Most practical: Two-Stage Corrected (32.4 s)
+
+CLINICAL IMPLICATIONS:
+- Parameter estimation accuracy is EXCELLENT (MAPE < 15%)
+- L0 trajectory recovery is MODERATE (correlation = 0.582)
+- Method is suitable for real-world PKPD analysis
+
+RECOMMENDATIONS:
+
+For real clinical data:
+- Validate ke estimates against independent PK data
+- Consider patient-specific covariates (age, organ function)
+- Use cross-validation for model selection
+
+TECHNICAL SPECIFICATIONS:
+- Estimation framework: Mixed-effects state-space modeling
+- Optimization: Expectation-maximization (EM) algorithm
+- Regularization: L2 penalty (strength = 5.0)
+- Prior information: Informative priors on all parameters
+- Convergence: Maximum 30 EM iterations

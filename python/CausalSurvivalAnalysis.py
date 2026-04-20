@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.io import loadmat, savemat
+from datetime import datetime
 
 # ---------------------------------------------------------------------
 # Inline helpers (KM + bootstrap-by-sid) to mirror MATLAB behavior
@@ -69,10 +70,14 @@ def fcnPlotKM_py(Tdf: pd.DataFrame):
     return s0, s1, t0, t1
 
 def fcn_bootstrapBySID_py(T0: pd.DataFrame, N: int) -> pd.DataFrame:
-    """Bootstrap patients by SID with replacement; reindex SIDs to 1..N to match MATLAB intent."""
-    rng = np.random.default_rng()
+    """Bootstrap patients by SID with replacement; reindex SIDs to 1..N to match MATLAB intent.
+
+    Uses global np.random (seeded via np.random.seed at script top) so bootstrap
+    CIs are reproducible. Previously used an unseeded default_rng which silently
+    broke reproducibility of the paper's bootstrap confidence intervals.
+    """
     orig_ids = np.unique(T0["sid"].values)
-    sampled_ids = rng.choice(orig_ids, size=len(orig_ids), replace=True)
+    sampled_ids = np.random.choice(orig_ids, size=len(orig_ids), replace=True)
     frames = []
     for new_sid, old_sid in enumerate(sampled_ids, start=1):
         df = T0[T0["sid"] == old_sid].copy()
@@ -321,3 +326,114 @@ savemat(
 )
 
 print("\nBootstrap analysis complete!")
+
+# ---------------------------------------------------------------------
+# Export causal survival analysis results to text file for paper
+# (Ported from matlab/a2_CausalSurvivalAnalysis.m:229-341)
+# ---------------------------------------------------------------------
+try:
+    _now = datetime.now()
+    _filename = f"causal_survival_results_{_now.strftime('%Y%m%d_%H%M%S')}.txt"
+    _ke_true = float(np.asarray(m.get("ke", np.nan)).reshape(())) if "ke" in m else float("nan")
+    with open(_filename, 'w') as f:
+        f.write('==========================================================\n')
+        f.write('CAUSAL SURVIVAL ANALYSIS RESULTS FOR PAPER\n')
+        f.write(f"Generated on: {_now.strftime('%d-%b-%Y %H:%M:%S')}\n")
+        f.write('==========================================================\n\n')
+
+        # Study parameters
+        f.write('STUDY PARAMETERS:\n')
+        f.write(f"- Sample size: {N} patients\n")
+        f.write('- Study period: 168 hours\n')
+        f.write(f"- Bootstrap samples: {Nboot}\n")
+        f.write(f"- Target threshold: {th:.3f}\n")
+        f.write('- Time step: 2 hours\n\n')
+
+        # Parameter estimation results
+        f.write('ESTIMATED PARAMETERS:\n')
+        f.write('Disease progression (L) parameters:\n')
+        for i in range(len(parmsL_est)):
+            f.write(f"  parmsL[{i+1}]: {parmsL_est[i]:.4f} (true: {parmsL_true[i]:.4f})\n")
+
+        f.write('\nPKPD parameters:\n')
+        for i in range(len(parmsPD_est)):
+            f.write(f"  parmsPD[{i+1}]: {parmsPD_est[i]:.4f} (true: {parmsPD_true[i]:.4f})\n")
+        f.write(f"ke: {ke_est:.4f} (true: {_ke_true:.4f})\n\n")
+
+        # Mortality hazard parameters
+        f.write('Mortality hazard parameters:\n')
+        for i in range(len(parmsY_est)):
+            f.write(f"  parmsY[{i+1}]: {parmsY_est[i]:.4f} (true: {parmsY_true[i]:.4f})\n")
+        f.write('\n')
+
+        # Survival outcomes at key time points
+        key_times = [24, 48, 72, 96, 120, 144, 168]
+        f.write('SURVIVAL OUTCOMES (with 95% Bootstrap CIs):\n')
+        f.write(f"{'Time(h)':<8s} {'Untreated(%)':<15s} {'Treated(%)':<15s} {'Difference(%)':<15s}\n")
+        f.write(f"{'-------':<8s} {'-------------':<15s} {'-----------':<15s} {'-------------':<15s}\n")
+
+        for kt in key_times:
+            # MATLAB: find(t_grid >= key_times(i), 1)
+            idxs = np.where(t_grid >= kt)[0]
+            if idxs.size > 0:
+                t_idx = int(idxs[0])
+                untreated_pct = s0_median[t_idx] * 100
+                treated_pct = s1_median[t_idx] * 100
+                diff_pct = (s1_median[t_idx] - s0_median[t_idx]) * 100
+                f.write(f"{kt:<8d} {untreated_pct:<15.1f} {treated_pct:<15.1f} {diff_pct:<15.1f}\n")
+
+        # Primary endpoint - 168 hours
+        f.write('\nPRIMARY ENDPOINT (168 hours):\n')
+        f.write(f"Untreated survival: {s0_median[-1]*100:.1f}% [{s0_lower[-1]*100:.1f}%, {s0_upper[-1]*100:.1f}%]\n")
+        f.write(f"Treated survival: {s1_median[-1]*100:.1f}% [{s1_lower[-1]*100:.1f}%, {s1_upper[-1]*100:.1f}%]\n")
+
+        # Treatment effect
+        f.write('\nTREATMENT EFFECT:\n')
+        f.write(f"Absolute risk difference: {treatment_effect_median*100:.1f}% [{treatment_effect_lower*100:.1f}%, {treatment_effect_upper*100:.1f}%]\n")
+
+        # Risk ratio / NNT
+        if treatment_effect_median > 0:
+            risk_ratio = s1_median[-1] / s0_median[-1] if s0_median[-1] != 0 else float('inf')
+            nnt = 1.0 / treatment_effect_median
+            f.write(f"Risk ratio: {risk_ratio:.2f}\n")
+            f.write(f"Number needed to treat: {nnt:.1f}\n")
+            f.write('Interpretation: Treatment is BENEFICIAL\n')
+        elif treatment_effect_median < 0:
+            f.write(f"Number needed to harm: {1.0/abs(treatment_effect_median):.1f}\n")
+            f.write('Interpretation: Treatment is HARMFUL\n')
+        else:
+            f.write('Interpretation: No treatment effect\n')
+
+        # Statistical significance
+        ci_excludes_zero = ((treatment_effect_lower > 0 and treatment_effect_upper > 0) or
+                            (treatment_effect_lower < 0 and treatment_effect_upper < 0))
+        f.write('\nSTATISTICAL SIGNIFICANCE:\n')
+        if ci_excludes_zero:
+            f.write('The 95% confidence interval excludes zero -> STATISTICALLY SIGNIFICANT\n')
+        else:
+            f.write('The 95% confidence interval includes zero -> NOT STATISTICALLY SIGNIFICANT\n')
+
+        # Methods summary
+        f.write('\nMETHODS SUMMARY:\n')
+        f.write('- Data generation: Logit-based discrete-time hazard models\n')
+        f.write('- Causal inference: G-formula/parametric g-computation\n')
+        f.write('- Parameter estimation: Mixed-effects PKPD modeling\n')
+        f.write(f"- Uncertainty quantification: {Nboot} bootstrap resamples\n")
+        f.write('- Simulation: RCT emulation with estimated parameters\n')
+
+        # Model performance
+        f.write('\nMODEL PERFORMANCE:\n')
+        param_errors_L = 100.0 * np.abs(parmsL_est - parmsL_true) / np.abs(parmsL_true)
+        param_errors_PD = 100.0 * np.abs(parmsPD_est - parmsPD_true) / np.abs(parmsPD_true)
+        param_errors_Y = 100.0 * np.abs(parmsY_est - parmsY_true) / np.abs(parmsY_true)
+        ke_error = 100.0 * abs(ke_est - _ke_true) / abs(_ke_true) if _ke_true != 0 else float('nan')
+
+        f.write('Mean absolute percentage error (MAPE):\n')
+        f.write(f"- Disease parameters (L): {np.nanmean(param_errors_L):.1f}%\n")
+        f.write(f"- PKPD parameters: {np.nanmean(param_errors_PD):.1f}%\n")
+        f.write(f"- Mortality parameters (Y): {np.nanmean(param_errors_Y):.1f}%\n")
+        f.write(f"- Elimination constant (ke): {ke_error:.1f}%\n")
+
+    print(f"Causal survival analysis results exported to: {_filename}")
+except Exception as _exc:
+    print(f"WARNING: Failed to export causal survival results text file: {_exc}")

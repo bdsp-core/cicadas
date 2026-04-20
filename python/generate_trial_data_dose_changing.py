@@ -21,7 +21,7 @@ np.random.seed(0)
 # Helper functions
 from fcnGeneratePatientParameters import fcnGeneratePatientParameters
 from fcn_generateStochasticTrajectories import fcnGenerateStochasticTrajectories
-from fcnSimulate_N_Patients import fcnSimulate_N_Patients
+from fcnSimulate_DoseChanging import fcnSimulate_DoseChanging
 
 # %% 1. SIMULATION PARAMETERS ==========================================
 
@@ -67,18 +67,20 @@ parmsL = np.array([0.25, 1, 0.15, 0.05, 0.15, 0.03, 40])
 dt = 2
 t = np.arange(0, 168 + dt, dt)  # MATLAB 0:dt:168 inclusive
 
-# %% MAIN LOOP FOR BOTH RCT MODES =====================================
-
-# Trial mode + randomization
-RCT = 1                              # 1 = randomized clinical trial; set 0 for observational
-treatProb = np.full(N, 0.5)          # per-patient randomization probability
+# %% MAIN LOOP =========================================================
+# Mirrors MATLAB a0_GenerateDoseSwitchingData.m which calls
+# fcnSimulate_DoseChanging (NOT fcnSimulate_N_Patients). The previous
+# Python revision called the RCT simulator here, producing RCT data in
+# trialDataDoseChanging.csv; that silently broke the a1 ke-estimation
+# identifiability (dose-change windows did not exist). Fixed.
 
 # Generate baseline disease trajectories
 L0 = fcnGenerateStochasticTrajectories(t, parmsL, N)
 
-# Simulate all patients (faithful to MATLAB call)
-T = fcnSimulate_N_Patients(
-    N, RCT, treatProb, th, C, g, ke, L0, parmsControl, parmsY, parmsV, age, sofa
+# Simulate dose-changing trajectories. Seed=0 for reproducibility parity
+# with the module-level np.random.seed(0) call above.
+T = fcnSimulate_DoseChanging(
+    N, th, C, g, ke, L0, parmsY, age, sofa, seed=0
 )
 
 # Export to CSV for analysis

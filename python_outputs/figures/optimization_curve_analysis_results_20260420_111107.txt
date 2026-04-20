@@ -1,0 +1,52 @@
+==========================================================
+OPTIMIZATION CURVE ANALYSIS RESULTS FOR PAPER
+Generated on: 2026-04-20 11:11:07
+==========================================================
+
+STUDY CHARACTERISTICS:
+- Analysis: Treatment threshold optimization with bootstrap
+- Data sources: A01Data.mat, ThreeCurves.mat
+- Bootstrap samples: 1000
+- Threshold range: 0.000 to 1.000 (50 levels)
+- Key thresholds analyzed: 0.00, 0.02, 0.10, 0.80
+
+OPTIMAL THRESHOLD ANALYSIS:
+- Optimal threshold (G-formula): 0.020
+- Maximum ATE: 0.418 [95% CI: 0.374, 0.455]
+- Optimization method: Bootstrap-based grid search
+
+ATE RESULTS AT KEY THRESHOLDS:
+Threshold   ATE         95% CI              Interpretation 
+---------   ---         -----               -------------- 
+0.00        -0.065      [-0.097  ,-0.030  ] Harmful        
+0.02        0.418       [0.374   ,0.455   ] Beneficial     
+0.10        0.138       [0.095   ,0.185   ] Beneficial     
+0.80        -0.002      [-0.049  ,0.047   ] Harmful        
+
+SURVIVAL OUTCOMES AT KEY THRESHOLDS (168 hours):
+Threshold   Obs Untrt   Obs Treat   RCT Untrt   RCT Treat   
+0.00        nan         nan         nan         nan         
+0.02        nan         nan         nan         nan         
+0.10        nan         nan         nan         nan         
+0.80        nan         nan         nan         nan         
+
+OPTIMIZATION CURVE CHARACTERISTICS:
+- ATE range across thresholds: 0.482 (48.2% points)
+- ATE standard deviation: 0.092
+- Curve shape: Strong threshold dependence
+- Plateau regions (low gradient): 82% of threshold range
+
+BOOTSTRAP UNCERTAINTY ANALYSIS:
+Uncertainty at optimal threshold:
+- Coefficient of variation: 5.2%
+- 95% CI width: 0.081 (8.1% points)
+
+Safety assessment:
+- Thresholds with CI lower bound > 0: 10/50 (20.0%)
+
+TECHNICAL DETAILS:
+- Figure output: Fig_optimization_curves_with_survival.pdf
+- Format: PDF vector graphics (300 DPI)
+- Dimensions: 10 x 8 inches
+- Layout: 4 survival insets above main optimization curve
+- Statistical method: Bootstrap percentiles for confidence intervals

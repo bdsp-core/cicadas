@@ -84,10 +84,10 @@ def fcnEstimatePKPD_FixedKe_Optimized(
     else:
         theta = np.array([3, 0.1, 0.1, 4, 0.1, 0.1, 0.5, 0.5], dtype=float)
 
-    # Individual effects (jitter to break symmetry)
-    rng = np.random.default_rng()
-    C_indiv = theta[0] + theta[1]*age_norm + theta[2]*sofa_norm + 0.1 * rng.standard_normal(N)
-    g_indiv = theta[3] + theta[4]*age_norm + theta[5]*sofa_norm + 0.1 * rng.standard_normal(N)
+    # Individual effects (jitter to break symmetry). Use global np.random
+    # (inherits caller's seed) — mirrors MATLAB's global randn stream.
+    C_indiv = theta[0] + theta[1]*age_norm + theta[2]*sofa_norm + 0.1 * np.random.randn(N)
+    g_indiv = theta[3] + theta[4]*age_norm + theta[5]*sofa_norm + 0.1 * np.random.randn(N)
     C_indiv = _clip(C_indiv, 0.5, 10.0)
     g_indiv = _clip(g_indiv, 0.5, 10.0)
 
