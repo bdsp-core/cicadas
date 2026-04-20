@@ -4,7 +4,7 @@ Each manuscript figure is produced by a single MATLAB script. The scripts read d
 
 | Manuscript figure (filename)                                   | Script (path)                                                                      | Depends on                                                      |
 |----------------------------------------------------------------|------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| `Fig1_singleTrajectories_3panels.pdf`                          | [`CICADA_FIGURES/a1_SingleTraces.m`](../CICADA_FIGURES/a1_SingleTraces.m)          | `trialData1.csv`, `trialDataDoseChanging.csv`                  |
+| `Fig1_singleTrajectories_3panels.pdf`                          | [`CICADA_FIGURES/a1_SingleTraces.m`](../CICADA_FIGURES/a1_SingleTraces.m)          | `trialData1.csv`, `trialDataDoseChanging.csv` (produced by `matlab/a0_GenerateTrialData.m` + `matlab/a0_GenerateDoseSwitchingData.m`) |
 | `Fig_Combined_PKPD_Analysis.pdf`                               | [`CICADA_FIGURES/a2_EvaluatePKPD_estimates_figures.m`](../CICADA_FIGURES/a2_EvaluatePKPD_estimates_figures.m) | `PKPD_estimation_results.mat`                                   |
 | `Fig3_swimmer_survival_plot_RCT.pdf`                           | [`CICADA_FIGURES/a3a_Fig_Swimmers_RCT.m`](../CICADA_FIGURES/a3a_Fig_Swimmers_RCT.m)   | `trialData1.csv`, `bootstrap_confidence_bands.mat`              |
 | `Fig4_swimmer_survival_plot_Obs_Naive.pdf`                     | [`CICADA_FIGURES/a3b_Fig_Swimmers_Obs_Naive.m`](../CICADA_FIGURES/a3b_Fig_Swimmers_Obs_Naive.m) | `trialData0.csv`, `trialData1.csv`                             |

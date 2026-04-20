@@ -10,16 +10,18 @@ This repository accompanies:
 
 ```
 cicadas/
-├── a0_GenerateTrialData.m            # Generate RCT + observational simulated cohorts
-├── a0_GenerateDoseSwitchingData.m    # Generate dose-switching cohort (for PKPD estimation)
-├── a1_EstimatePKPD.m                 # Estimate PKPD parameters (EKF/RTS/EM, two-stage w/ bias correction)
-├── a2_CausalSurvivalAnalysis.m       # g-formula causal survival analysis + bootstrap CIs
-├── a3_ThreeTreatmentTargets.m        # Compare three treatment targets
-├── a4_HeatMap_Agressive.m            # Heterogeneous-effects heatmap (aggressive scenario)
-├── a4_OptimalTreatmentTarget.m       # Personalized optimal threshold (parallel bootstrap)
-├── a4_Optimize_Heatmap.m             # Personalized optimization heatmap
-├── fcn*.m                            # Helper functions (PKPD, disease dynamics, plotting, bootstrap)
-├── CICADA_FIGURES/                   # Figure-generation scripts
+├── matlab/                           # MATLAB analysis pipeline (authoritative, used for paper figures)
+│   ├── a0_GenerateTrialData.m        # Generate RCT + observational simulated cohorts
+│   ├── a0_GenerateDoseSwitchingData.m# Generate dose-switching cohort (for PKPD estimation)
+│   ├── a1_EstimatePKPD.m             # Estimate PKPD parameters (EKF/RTS/EM, two-stage w/ bias correction)
+│   ├── a2_CausalSurvivalAnalysis.m   # g-formula causal survival analysis + bootstrap CIs
+│   ├── a3_ThreeTreatmentTargets.m    # Compare three treatment targets
+│   ├── a4_HeatMap_Agressive.m        # Heterogeneous-effects heatmap (aggressive scenario)
+│   ├── a4_OptimalTreatmentTarget.m   # Personalized optimal threshold (parallel bootstrap)
+│   ├── a4_Optimize_Heatmap.m         # Personalized optimization heatmap
+│   ├── fcn*.m                        # Helper functions (PKPD, disease dynamics, plotting, bootstrap)
+│   └── run_all.m                     # Orchestrates the full a0 -> a4 -> figures pipeline
+├── CICADA_FIGURES/                   # Figure-generation scripts (one script per manuscript figure)
 │   ├── a1_SingleTraces.m             # -> Fig1_singleTrajectories_3panels.pdf
 │   ├── a2_EvaluatePKPD_estimates_figures.m   # -> Fig_Combined_PKPD_Analysis.pdf
 │   ├── a3a_Fig_Swimmers_RCT.m        # -> Fig3_swimmer_survival_plot_RCT.pdf
@@ -28,10 +30,9 @@ cicadas/
 │   ├── a4_HeatMaps_Combined.m        # -> Fig_heatmap_figure.pdf
 │   ├── a5_OptimizationCurve.m        # -> Fig_optimization_curves_with_survival.pdf
 │   └── run_all_figures.m             # Runs all seven figure scripts
-├── Python_And_Markdown/              # MATLAB-side developer notes
-├── python/                           # Parallel Python port (not authoritative)
+├── python/                           # Python port (work in progress; MATLAB is authoritative)
 ├── sensitivity/                      # Sensitivity analyses (unmeasured confounding, measurement error, alt censoring)
-├── benchmarks/                       # IPTW / MSM benchmark implementations
+├── benchmarks/                       # IPTW / MSM benchmark implementations (Python)
 ├── docs/
 │   └── figure_map.md                 # Script → manuscript-figure mapping
 ├── parmsTrue.mat                     # Ground-truth simulation parameters (tracked)
@@ -50,7 +51,21 @@ cicadas/
 
 ## Quickstart (MATLAB)
 
+From the repository root, add all subdirectories to the MATLAB path and
+then run the orchestrator:
+
 ```matlab
+addpath(genpath(pwd));
+
+% Full end-to-end pipeline (includes a0 -> a4 -> figure generation):
+run('matlab/run_all.m')
+```
+
+Or step through manually (same path setup):
+
+```matlab
+addpath(genpath(pwd));
+
 % 1. Generate simulated cohorts
 a0_GenerateTrialData                 % ~25 s  -> trialData0.csv, trialData1.csv, parmsTrue.mat
 a0_GenerateDoseSwitchingData         % ~90 s  -> trialDataDoseChanging.csv

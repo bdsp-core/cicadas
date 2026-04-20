@@ -5,10 +5,19 @@ function run_all()
 % Designed for reproducibility: each script uses its own RNG seed or
 % inherits from the prior script. See README.md for expected runtime.
 %
-% From the repo root:
-%   >> run_all
+% Invoke from the repo root (the directory that contains matlab/,
+% CICADA_FIGURES/, sensitivity/, etc.):
+%   >> run('matlab/run_all')
 %
-% Individual scripts can be run interactively in the same order.
+% Individual scripts can be run interactively in the same order by
+% first adding the matlab/ directory to the path.
+
+% Add all subdirectories of the repo root to the path so that the a*
+% and fcn* functions (now under matlab/) and the figure scripts
+% (under CICADA_FIGURES/) are all findable regardless of current dir.
+repo_root = fileparts(fileparts(mfilename('fullpath')));
+addpath(genpath(repo_root));
+cd(repo_root);  % analyses read trialData*.csv from the repo root.
 
 stages = {
     'a0_GenerateTrialData'              % ~25 s

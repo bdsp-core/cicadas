@@ -16,7 +16,7 @@
 clear; clc; format compact;
 script_dir = fileparts(mfilename('fullpath'));
 repo_root  = fileparts(fileparts(script_dir));
-addpath(repo_root);
+addpath(genpath(repo_root));
 addpath(genpath(fullfile(repo_root, 'CICADA_FIGURES')));
 
 %% Shared baseline params
