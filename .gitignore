@@ -74,3 +74,6 @@ python_outputs/**/trialData*.csv
 Python_And_Markdown/test_output.txt
 wait_and_verify.log
 wait_and_verify.sh
+
+# Multi-seed replication results are cited by the manuscript; keep them
+!multiseed/*.csv
