@@ -1,0 +1,33 @@
+\begin{abstract}
+Non-convulsive seizures affect approximately 30\% of critically ill patients who undergo EEG
+monitoring, yet optimal treatment strategies remain uncertain because of the trade-off between
+seizure suppression and drug toxicity. Randomized trials in this setting are expensive, ethically
+fraught, and have so far been inconclusive, while the wide practice variation in routine ICU care
+creates observational data in which treatment decisions and disease progression influence each other
+over time---a confounding structure that defeats standard survival analysis.
+
+We present CICADAS (\textbf{C}ausal \textbf{I}nference for \textbf{C}ritical-Care
+\textbf{A}nti-Seizure Treatment with \textbf{D}isease Dynamics, \textbf{A}utomated PKPD/Trial
+Simulation, and \textbf{S}urvival Optimization), a computational framework that couples the
+parametric g-formula with mechanistic pharmacokinetic--pharmacodynamic modeling, disease dynamics,
+and dynamic treatment policies to emulate randomized trials from longitudinal observational data. We
+specify the notation and identification assumptions required for time-varying treatment and
+confounding, describe a sequential estimation procedure for each model component, and provide open
+implementations in MATLAB and Python.
+
+The framework is evaluated entirely by \emph{internal, simulation-based validation} on synthetic ICU
+cohorts with known ground truth. Across 400 simulated replications, confounding by indication
+attenuated a true 14.6 percentage-point survival benefit to 1.0 points under naive Kaplan--Meier
+analysis---eliminating 93\% of the effect---and reversed its sign in 39\% of replications. Under
+these conditions the g-formula recovers the ground-truth treatment effect closely, whereas naive
+Kaplan--Meier, stabilized inverse probability of treatment weighting, and a baseline-weighted
+marginal structural model do not. We report the estimator's
+behavior under injected unmeasured confounding, EEG measurement error, and alternative censoring
+mechanisms.
+
+These results establish methodological feasibility, not clinical utility. Because the simulated data
+and the estimation models share structural assumptions, the recovery results characterize estimator
+consistency under correct specification rather than robustness to misspecification. Whether CICADAS
+yields valid causal estimates in real ICU data is an open question, to be addressed by external
+validation in multicenter ICU EEG cohorts.
+\end{abstract}

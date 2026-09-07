@@ -1,0 +1,52 @@
+\begin{tcolorbox}[title=Corollary 1: Direct effect under elimination of death and censoring]
+    \label{cor:direct-effect-time-varying}
+    
+  Let $V_k = (C_k,D_k)$, $X_k = L_k$, 
+  assume the order of events at each time step is $L_k, A_k, Y_k, D_{k+1}, C_{k+1}$,
+  and consider a hypothetical intervention $g$ 
+  eliminates both censoring and death. 
+  For each individual, assume the three identifying 
+  conditions hold. Then the direct effect of the intervention $g$ on the survival outcome at time $K+1$ is given by:
+
+  
+  \begin{align*}
+      P\Bigl(Y_{K+1}^g &= 1\Bigr) \;=\;
+      P\Bigl(Y^{\bar{a}^g,\bar{c}=\bar{d}=0} = 1\Bigr) \\
+      & = \sum_{\bar{l}_K} \; \sum_{k=0}^{K}\;
+      \Pr\Bigl(Y_{k+1} = 1 \,\Bigm|\,
+              \bar{L}_k=\bar{l}_k,\;\bar{A}_k=\bar{a}^g_k,\;
+              \bar{Y}_k = \bar{C}_{k+1}=\bar{D}_{k+1}=0\Bigr)
+      \\
+      & \qquad \times \;
+      \prod_{j=0}^{k}
+      \Bigl\{\,
+        \Pr\Bigl(Y_j=0 \,\Bigm|\,
+                \bar{L}_{j-1}=\bar{l}_{j-1},\;\bar{A}_{j-1}=\bar{a}^g_{j-1},\;
+                \bar{Y}_{j-1} = 
+                \bar{C}_j=\bar{D}_j=0\Bigr)
+      \\
+      &\qquad\qquad\qquad \times\;
+        f\Bigl(l_j \,\Bigm|\,
+                  \bar{l}_{j-1},\;\bar{A}_{j-1}=\bar{a}^g_{j-1},\;
+                  \bar{C}_j=\bar{D}_j=\bar{Y}_j=0\Bigr)
+      \Bigr\},
+  \end{align*}  
+    where for \(j=0\),  
+    \(
+    f\Bigl(l_0 \,\Bigm|\,
+       \bar{C}_0 = \bar{D}_0 = \bar{Y}_0=0,\; \bar{A}_{-1}=0\Bigr)
+      \;\equiv\;
+    f(l_0),
+    \)
+    the marginal distribution of baseline covariates.
+    
+    \end{tcolorbox}
+    
+    \noindent
+    \textbf{Proof.}
+    This result follows immediately from Theorem~1.  Specifically, we take
+    \(\,V_{k+1} = (C_{k+1}, D_{k+1})\)
+    and
+    \(X_k = L_k\).
+    \(\blacksquare\)
+    

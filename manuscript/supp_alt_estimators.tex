@@ -1,0 +1,17 @@
+\paragraph{Relation to alternative g-formula estimators.}
+The g-formula estimand in \eqref{eq:gformula_survival1} can also be targeted by other
+estimators, including inverse probability of treatment and censoring weighting (IPTW),
+iterated conditional expectations, and parametric plug-in estimators
+\cite{hernan2020causal}. In the present setting, however, IPTW can be unstable for
+continuous, state-dependent dosing policies over long horizons due to extreme weights
+and near-positivity violations, while iterated expectation and direct plug-in approaches
+require evaluating high-dimensional nested conditional expectations. By contrast,
+forward Monte Carlo simulation from the disease-evolution model provides a numerically
+stable and conceptually direct implementation that aligns with the mechanistic PK/PD and
+disease-dynamics models used throughout CICADAS.
+
+In the following sections, we present specific disease evolution and outcome models
+that capture the ICU seizure treatment scenario, methods for estimating their
+parameters, and experimental results using these models to estimate and optimize
+treatment effects.
+

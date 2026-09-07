@@ -1,0 +1,38 @@
+\begin{table}[ht!]
+\centering
+\caption{Illustrative example of the ``long'' (person-time) data format. Each row represents one time-specific record for a given patient.}
+\label{tab:long_format_example}
+\begin{tabular}{ccccccccc}
+\toprule
+\textbf{sid} & \textbf{age} & \textbf{sofa} & \textbf{t} & \textbf{L} & \textbf{A} & \textbf{C} & \textbf{Y} & \textbf{Rx} \\
+\midrule
+1 & 76.66 & 17.88 & 0 & 0.000 & 0 & 0 & 0 & 0 \\
+1 & 76.66 & 17.88 & 2 & 0.005 & 0 & 0 & 0 & 0 \\
+1 & 76.66 & 17.88 & 4 & 0.000 & 0 & 0 & 0 & 0 \\
+1 & 76.66 & 17.88 & 6 & 0.007 & 0 & 0 & 0 & 0 \\
+2 & 65.32 & 12.45 & 0 & 0.000 & 0 & 1 & 0 & 1 \\
+2 & 65.32 & 12.45 & 2 & 0.012 & 1 & 1 & 0 & 1 \\
+\vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Recommended design diagnostics for PK/PD estimation. $x_t/C_{50}$ is evaluated using $C_i$ implied by the chosen approach (population fixed effects or mixed effects).}
+\label{tab:design}
+\begin{tabular}{p{3.4cm} p{7.8cm} p{3.4cm}}
+\toprule
+\textbf{Metric} & \textbf{Definition / computation} & \textbf{Report as} \\
+\midrule
+Sample size and sampling & $N$ treated / $N$ controls; median (IQR) time points per patient; median (IQR) $\Delta t$ & Counts; median [IQR] \\
+$x_t/C_{50}$ coverage & Median [IQR] of $\,x_{t}/C_{50}$ across time; fraction of time with $x_t/C_{50}\in[0.25,4]$ & Median [IQR]; \% time \\
+Concentration dynamic range & For each patient, $\max_t x_{t,i}/\min_{t:x_{t,i}>0} x_{t,i}$; summarize by median [IQR] & Median [IQR] \\
+Dosing variability & Coefficient of variation of $A_{t,i}$ within patient; frequency of dose changes per 24h & Median [IQR]; per 24h \\
+Bolus/step events & Share of patients with $\max_t |\Delta A_{t,i}|$ exceeding a prespecified step size; median step magnitude & \% patients; median \\
+Typical PD effect & Median [IQR] of $s_{x_t}$ under observed dosing & Median [IQR] \\
+Covariate spread & Age mean (SD) [min,max]; SOFA mean (SD) [min,max]; $\rho(\text{age},\text{SOFA})$ & Values as shown \\
+Covariate--dosing balance & Standardized differences in age and SOFA between high- vs.\ low-intensity dosing strata & Std.\ diff.\ (|d|) \\
+\bottomrule
+\end{tabular}
+\end{table}

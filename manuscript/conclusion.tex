@@ -1,0 +1,21 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have presented CICADAS, a computational framework that couples the parametric g-formula with
+mechanistic PK/PD modeling, disease dynamics, and closed-loop treatment policies to emulate
+randomized trials of dynamic anti-seizure strategies from longitudinal observational data. Evaluated
+on synthetic ICU cohorts with known ground truth, the framework recovers the generating causal
+effect under confounding severe enough to eliminate the apparent treatment benefit, outperforms
+standard IPTW and marginal structural model implementations on the same simulated data, and degrades
+in characterizable ways under unmeasured confounding, measurement error, and informative censoring.
+We have specified the conditions a real dataset must satisfy for the framework to apply---treatment
+overlap across the policy range, sufficient measured confounding, dosing variation adequate to
+identify PK/PD parameters, a severity readout of adequate fidelity, a characterized censoring
+mechanism, and adequately represented subgroups---and we have set out what the framework
+structurally cannot do, including evaluating therapies outside current practice.
+
+These results establish methodological feasibility and provide a benchmarked implementation. They do
+not establish clinical utility. Because our simulated data and our estimation models share
+structural assumptions, and because no real patient data were analyzed, whether CICADAS produces
+valid causal estimates in ICU practice remains an open question that only independent external
+validation, followed by prospective evaluation of any resulting hypothesis, can answer.

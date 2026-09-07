@@ -1,0 +1,129 @@
+\documentclass{article}
+
+% PACKAGES
+% General Formatting & Language
+\usepackage[english]{babel}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{placeins}
+
+
+% Math & Symbols
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{bbold}
+
+% Graphics & Colors
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+
+% TikZ
+\usepackage{tikz}
+\usetikzlibrary{shapes, decorations.pathmorphing, shapes.geometric, calc, arrows.meta, positioning, backgrounds}
+\usetikzlibrary{matrix,positioning,calc}
+
+
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Miscellaneous
+\usepackage{enumitem}
+\usepackage{url}
+\usepackage{xr}
+\externaldocument{main}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+% CUSTOM COMMANDS & THEOREMS
+\newtheorem{lemma}{Lemma}
+\newcommand{\hlm}[1]{{\color{blue}#1}}
+\newcommand{\mbw}[1]{{\color{blue}#1}}
+\newcommand{\ind}{\mathrel{\perp\!\!\!\!\perp}}
+
+\title{Supplementary Material\\[0.4em]\large CICADAS: A Simulation-Based Framework for Randomized Trial Emulation in Critical-Care Seizure Treatment}
+
+
+% \title{CICADAS \cicada: A Simulation-Based Tutorial for Causal Survival Analysis with Complex Time-Varying Confounding}
+
+% \title{CICADAS: A Simulation-Based Tutorial for Causal Survival Analysis with Complex Time-Varying Confounding}
+
+
+\author{
+    Mitchell McCauley\textsuperscript{1*},
+    Tara Westover\textsuperscript{2*}, 
+    Patrick Wynn\textsuperscript{1*}, 
+    Shadi Sartipi\textsuperscript{3*}, \\
+    Niels Turley\textsuperscript{1},
+    Zade Akras\textsuperscript{3},
+    Pieter Colin\textsuperscript{4},
+    Andrew Webb\textsuperscript{3}, 
+    Aaron F. Struck\textsuperscript{5},
+    Jennifer Kim\textsuperscript{6},\\ 
+    David Cheng\textsuperscript{3}, % Manual line break for formatting
+    Haoqi Sun\textsuperscript{1}, 
+    Tim Houle\textsuperscript{3}, 
+    Cynthia Rudin\textsuperscript{7}, 
+    Alexander Volfovsky\textsuperscript{7}, Harsh Parikh\textsuperscript{6} \\
+    Marta B. Fernandes\textsuperscript{3\dag}, % Manual line break for formatting
+    Sahar Zafar\textsuperscript{3\dag},
+    M.\ Brandon Westover\textsuperscript{1\dag}
+}
+
+\date{} % Suppress date
+
+\begin{document}
+\maketitle
+
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\setcounter{section}{0}\setcounter{table}{0}\setcounter{figure}{0}
+
+\tableofcontents
+\newpage
+
+\section{Causal Identification: Derivations}
+\input{appendix/appendix-intro}
+\input{appendix/appendix-g-Thm1}
+\input{appendix/appendix-g-Cor1-direct}
+\input{appendix/appendix-g-Cor2-total}
+\input{appendix/appendix-g-Cor3-death}
+\input{appendix/appendix-monte-carlo}
+
+\subsection{Relation to Alternative G-Formula Estimators}
+\input{supp_alt_estimators}
+
+\subsection{IPW Formulas}\label{sec:appendix-ipw}
+\input{appendix/appendix-ipw-Lem1}
+\input{appendix/appendix-ipw-Lem2}
+\input{appendix/appendix-ipw-Lem3}
+\input{appendix/appendix-ipw-Thm2}
+\input{appendix/appendix-ipw-cor4}
+\input{appendix/appendix-ipw-cor5}
+
+\section{Full Model Specification}
+The main text gives the defining equation for each component of the simulation model. This section
+collects the complete parameterizations, including the censoring and treatment-assignment mechanisms
+and the full table of model variables, symbols, and ground-truth values.
+\input{supp_model_parameters}
+\input{supp_mechanisms}
+
+\section{Estimation Details}
+This section gives the filter and smoother recursions, the expectation--maximization updates, the
+alternative estimation strategies compared in the main text, the design diagnostics used to screen
+patients for inclusion, uncertainty quantification, and implementation details.
+\input{supp_estimation_details}
+
+\section{Supplementary Tables}
+\input{supp_tables}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,26 @@
+\begin{tcolorbox}[title=Corollary 4: Equivalence of g-formula and IPW representation for direct effect]
+
+\begin{align*}
+\Pr& \Bigl[Y^{a,\bar{c} = \bar{d} = 0}_{K+1}=1\Bigr] 
+= \sum_{l_K} \sum_{k=0}^K \Pr[Y_{k+1} = 1 \mid \bar{L}_k = \bar{l}_k, \bar{A}_k = \bar{a}^g_k, \bar{D}_{k+1}=\bar{Y}_k = \bar{C}_{k+1} = 0] \\
+& \quad \quad \quad \quad\quad \quad \times \prod_{j=0}^{k} \left\{ \right.
+\Pr[Y_j = 0 \mid \bar{L}_{j-1} = \bar{l}_{j-1}, \bar{A}_k = \bar{a}^g_k, \bar{Y}_{j-1} = \bar{D}_j = \bar{C}_j = 0] \\
+& \quad \quad\quad \quad\quad \quad\quad \quad \times f(l_j \mid \bar{l}_{j-1}, \bar{A}_{j-1}=\bar{a}^g_{j-1}, \bar{D}_j = \bar{Y}_j = \bar{C}_j =0) 
+\left. \right\} \\
+& = \sum_{k=0}^K h_k(\bar{a}^g_k) \prod_{j=0}^{k-1} \left[1 - h_j(\bar{a}^g_j)\right],
+\end{align*}
+
+where
+$$
+h_k(a) = \frac{E[Y_{k+1}(1 - Y_k) W_k \mid \bar{A}_k = \bar{a}^g_k]}{E[(1 - Y_k) W_k \mid \bar{A}_k=\bar{a}^g_k]},
+$$
+and \(W_k = W^C_k \cdot W^D_k\), with
+
+\begin{align*}
+    W^C_k &= \prod_{j=0}^k \frac{I(C_{j+1} = 0)}{\Pr[C_{j+1} = 0 \mid \bar{L}_j = \bar{l}_j, \bar{A}_j = \bar{a}^g_j,  \bar{D}_j = \bar{Y}_j = \bar{C}_j =0]} \\
+    W^D_k & = \prod_{j=0}^k \frac{I(D_{j+1} = 0)}{\Pr[D_{j+1} = 0 \mid \bar{L}_j = \bar{l}_j,\bar{A}_j = \bar{a}^g_j, \bar{D}_j = \bar{Y}_j =  \bar{C}_{j+1} =0]}.
+\end{align*}
+\end{tcolorbox}
+
+\textbf{Proof.} The result follows from Theorem 2 by choosing \(\bar{V}_{K+1} = (\bar{C}_{K+1}, \bar{D}_{K+1})\) and \(\bar{X}_K = \bar{L}_K\), corresponding to a setting where both loss to follow-up and competing events are considered censoring events, and all time-varying covariates are included. 
+\(\blacksquare\)

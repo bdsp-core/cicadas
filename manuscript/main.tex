@@ -1,0 +1,132 @@
+\documentclass{article}
+
+% PACKAGES
+% General Formatting & Language
+\usepackage[english]{babel}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{placeins}
+
+
+% Math & Symbols
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage{bbold}
+
+% Graphics & Colors
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+
+% TikZ
+\usepackage{tikz}
+\usetikzlibrary{shapes, decorations.pathmorphing, shapes.geometric, calc, arrows.meta, positioning, backgrounds}
+\usetikzlibrary{matrix,positioning,calc}
+
+
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Miscellaneous
+\usepackage{enumitem}
+\usepackage{url}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+% CUSTOM COMMANDS & THEOREMS
+\newtheorem{lemma}{Lemma}
+\newcommand{\hlm}[1]{{\color{blue}#1}}
+\newcommand{\mbw}[1]{{\color{blue}#1}}
+\newcommand{\ind}{\mathrel{\perp\!\!\!\!\perp}}
+
+\title{CICADAS: A Simulation-Based Framework for Randomized Trial Emulation in Critical-Care Seizure Treatment}
+
+
+% \title{CICADAS \cicada: A Simulation-Based Tutorial for Causal Survival Analysis with Complex Time-Varying Confounding}
+
+% \title{CICADAS: A Simulation-Based Tutorial for Causal Survival Analysis with Complex Time-Varying Confounding}
+
+
+\author{
+    Mitchell McCauley\textsuperscript{1*},
+    Tara Westover\textsuperscript{2*}, 
+    Patrick Wynn\textsuperscript{1*}, 
+    Shadi Sartipi\textsuperscript{3*}, \\
+    Niels Turley\textsuperscript{1},
+    Zade Akras\textsuperscript{3},
+    Pieter Colin\textsuperscript{4},
+    Andrew Webb\textsuperscript{3}, 
+    Aaron F. Struck\textsuperscript{5},
+    Jennifer Kim\textsuperscript{6},\\ 
+    David Cheng\textsuperscript{3}, % Manual line break for formatting
+    Haoqi Sun\textsuperscript{1}, 
+    Tim Houle\textsuperscript{3}, 
+    Cynthia Rudin\textsuperscript{7}, 
+    Alexander Volfovsky\textsuperscript{7}, Harsh Parikh\textsuperscript{6} \\
+    Marta B. Fernandes\textsuperscript{3\dag}, % Manual line break for formatting
+    Sahar Zafar\textsuperscript{3\dag},
+    M.\ Brandon Westover\textsuperscript{1\dag}
+}
+
+\date{} % Suppress date
+
+\begin{document}
+
+\maketitle
+
+% Author contributions and affiliations
+% Note: The \footnotetext commands provide the text for the symbols (*, †) in the author list.
+\begingroup
+\renewcommand\thefootnote{\fnsymbol{footnote}}
+\footnotetext[1]{Co-first authors.}
+\footnotetext[2]{Co-senior authors.}
+\endgroup
+
+% Affiliation list
+\begingroup
+\small
+\noindent\textsuperscript{1}Beth Israel Deaconess Medical Center / Harvard Medical School\\
+\textsuperscript{2}Harvard University\\
+\textsuperscript{3}Massachusetts General Hospital / Harvard Medical School\\
+\textsuperscript{4}Rijksuniversiteit Groningen\\
+\textsuperscript{5}Washington University School of Medicine\\
+\textsuperscript{6}Yale University\\
+\textsuperscript{7}Duke University
+
+\par
+\endgroup
+
+\input{abstract}
+\input{introduction}
+\input{ClinicalProblemStatement}
+\input{theory}
+\input{MathematicalModels}
+\input{Estimation}
+\input{Results}
+\input{Discussion}
+\input{conclusion}
+\input{frontmatter_revision}
+
+\section*{Data and Code Availability}
+All data analyzed in this paper are simulated; no human-subjects data were used. The complete
+simulation, estimation, and analysis code is openly available in both MATLAB and Python at
+\url{https://github.com/bdsp-core/cicadas} under the MIT license, together with the scripts that
+regenerate every figure and table in this paper and in the Supplementary Material. The version
+accompanying this paper is archived as release \texttt{v1.0.0}
+(\url{https://github.com/bdsp-core/cicadas/releases/tag/v1.0.0}); readers seeking to reproduce the
+results reported here should use that tag rather than the development branch. The multi-seed
+replication reported in Section~\ref{sec:cohorts} is reproduced by the drivers in the
+\texttt{multiseed/} directory of that repository. The two implementations use different random number
+generators (Mersenne Twister and PCG64) and therefore produce different individual cohorts from the
+same nominal seed; Section~\ref{sec:cohorts} reports the agreement between them across replications.
+
+% Bibliography
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

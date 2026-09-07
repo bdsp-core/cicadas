@@ -77,3 +77,7 @@ wait_and_verify.sh
 
 # Multi-seed replication results are cited by the manuscript; keep them
 !multiseed/*.csv
+
+# Manuscript figures and compiled PDFs are part of the reproducible record
+!manuscript/**/*.pdf
+!manuscript/*.pdf

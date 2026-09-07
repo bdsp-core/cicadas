@@ -1,0 +1,20 @@
+\begin{tcolorbox}[title= IPW Theorem 2: Equivalence of the IPW and g-formulae] 
+$$\Pr \Bigl[Y^{a,\overline{v}=0}_{K+1}=1\Bigr] = \sum_{k=0}^K h_k^{v=0}(a)\prod_{j=0}^{k-1}[1-h_j^{v=0}(a)].$$
+\end{tcolorbox}
+
+\textbf{Proof.} For brevity, we write $\bar{a}^g_K$ in place of $\bar{A}_K = \bar{a}^g_K$. 
+\begin{align*}
+    &\sum_{k=0}^K h_k^{v=0}(a)\prod_{j=0}^{k-1}[1-h_j^{v=0}(a)]\\
+    & \stackrel{a}{=} \sum_{k=0}^K E[Y_{k+1}(1-Y_k)W_k^V|\bar{a}^g_k]\prod_{j=1}^k\frac{E[(1-Y_{j-1})W_{j-1}^V|\bar{a}^g_k]-E[Y_j(1-Y_{j-1})W_{j-1}^V|\bar{a}^g_k]}{E[(1-Y_j)W_j^V|\bar{a}^g_k]} \\
+    & \stackrel{b}{=} \sum_{k=0}^K E[Y_{k+1}(1-Y_k)W_k^V|\bar{a}^g_k]\prod_{j=1}^k\frac{E[(1-Y_j)W_j^V|\bar{a}^g_k]}{E[(1-Y_j)W_j^V|\bar{a}^g_k]} \\
+    & = \sum_{k=0}^K E[Y_{k+1}(1-Y_k)W_k^V|\bar{a}^g_k]\\[6pt]
+    &\stackrel{c}{=}\sum_{k=0}^K\sum_{\bar{x}_K} 
+        \Pr\Bigl(Y_{k+1} = 1 \,\Big|\,\bar{X}_k = \bar{x}_k,\;\bar{A}_k=\bar{a}^g_k,\; \bar{Y}_k=0,\;\bar{V}_{k+1}=0 \Bigr) \\[6pt]
+    &\quad\quad \times\;
+    \prod_{j=0}^{k} \Pr\Bigl(Y_j=0 \,\Big|\, \bar{X}_{j-1} = \bar{x}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\;\bar{Y}_{j-1} = \bar{V}_j = 0 \Bigr) \\[6pt]
+    &\quad\quad\quad \times\;
+      f\Bigl(x_j \,\Big|\,\bar{x}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr) \\[8pt]
+    &\stackrel{d}{=} \Pr\bigl(Y_{K+1}^{g} = 1\bigr)
+\end{align*}
+where (a) is by Lemma 1, (b) is by Lemma 2, (c) is by Lemma 3, and (d) is by Theorem 1. \(\blacksquare\)
+

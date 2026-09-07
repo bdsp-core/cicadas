@@ -1,0 +1,69 @@
+\subsection{Model Parameters}
+Table~\ref{tab:model_vars} summarizes the variables and parameters used throughout the framework. 
+
+\begin{longtable}{lp{10cm}}
+\caption{Model Variables and Parameters} \label{tab:model_vars} \\
+\toprule
+\textbf{Symbol} & \textbf{Description} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{c}{\textit{(continued from previous page)}} \\
+\toprule
+\textbf{Symbol} & \textbf{Description} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{\textit{(continued on next page)}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\multicolumn{2}{l}{\textbf{State Variables}} \\
+$L_t$ & Observed disease intensity/burden \\
+$L_{0,t}$ & Underlying disease intensity (without treatment) \\
+$X_t$ & Drug concentration \\
+$A_t$ & Treatment administration rate (physician's action) \\
+$Y_t$ & Death indicator (absorbing state) \\
+$C_t$ & Censoring indicator (e.g., treatment deviation) \\
+\midrule
+\multicolumn{2}{l}{\textbf{Patient Characteristics}} \\
+Age & Patient age (years) \\
+SOFA & Sequential Organ Failure Assessment score \\
+\midrule
+\multicolumn{2}{l}{\textbf{Disease Model Parameters}} \\
+$h$ & Growth rate during early phase \\
+$H$ & Peak disease intensity (carrying capacity) \\
+$\alpha$ & Mean reversion strength of disease process \\
+$\delta$ & Decay rate of disease after peak \\
+$\sigma_{\text{early}}, \sigma_{\text{late}}$ & Volatility of disease process in early and late phases \\
+$\tau$ & Volatility transition time constant \\
+\midrule
+\multicolumn{2}{l}{\textbf{PK/PD Parameters}} \\
+$k_e$ & Drug elimination rate constant \\
+$C_{50}$ & Drug concentration for 50\% effect (EC50) \\
+$\gamma$ & Hill coefficient for drug effect steepness \\
+$\beta^C_0, \beta^C_1, \beta^C_2$ & Coefficients defining $C_{50}$ based on baseline covariates \\
+$\beta^\gamma_0, \beta^\gamma_1, \beta^\gamma_2$ & Coefficients defining $\gamma$ based on baseline covariates \\
+\midrule
+\multicolumn{2}{l}{\textbf{Control Parameters}} \\
+$\theta$ & Disease control target threshold \\
+$\kappa_i$ & Integral control gain for treatment adjustments \\
+$A_{\max}$ & Maximum treatment administration rate (saturation) \\
+\midrule
+\multicolumn{2}{l}{\textbf{Mortality Model Parameters}} \\
+$\alpha_0, \alpha_1$ & Baseline log-odds and time effect on mortality \\
+$\alpha_2$ & Baseline effect of cumulative disease burden on mortality \\
+$\alpha_3$ & Interaction effect of SOFA score on disease harm \\
+$\alpha_4$ & Baseline effect of cumulative treatment on mortality \\
+$\alpha_5$ & Interaction effect of age on treatment harm \\
+\midrule
+\multicolumn{2}{l}{\textbf{Censoring Model Parameters}} \\
+$\beta_0$ & Baseline log-odds of censoring for treated patients \\
+$\beta_1$ & Effect of cumulative treatment burden on censoring (treated patients) \\
+$\beta_2$ & Effect of time on censoring risk (treated patients) \\
+$\beta_3$ & Baseline log-odds of censoring for untreated patients \\
+$\beta_4$ & Effect of cumulative disease burden on censoring (untreated patients) \\
+$\beta_5$ & Effect of time on censoring risk (untreated patients) \\
+$A_{\mathrm{norm}}$ & Normalization constant for cumulative treatment burden (e.g., 207 units) \\
+$L_{\mathrm{norm}}$ & Normalization constant for cumulative disease burden (e.g., 24 units) \\
+$T_{\max}$ & Time normalization constant (e.g., 170 hours)
+\end{longtable}

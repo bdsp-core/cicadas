@@ -1,0 +1,21 @@
+\begin{tcolorbox}[title=Theorem 1: IPW Lemma 2]
+For \(k = 0, \ldots, K\) and \(W_k^V\) as in Lemma 1,
+\[
+E[(1 - Y_k)W_k^V\mid \bar{A}_k = \bar{a}^g_k] = E[(1 - Y_{k-1})W_{k-1}^V\mid \bar{A}_{k-1} = \bar{a}^g_{k-1}] - E[Y_k(1 - Y_{k-1})W_{k-1}^V\mid \bar{A}_{k-1} = \bar{a}^g_{k-1}].
+\]
+\end{tcolorbox}
+
+\textbf{Proof:}
+
+\begin{align*}
+E&[(1 - Y_k)W_k^V\mid \bar{A}_k = \bar{a}^g_k] \\
+&\stackrel{a}{=}  E\!\left[\,(1 - Y_k)W_{k-1}^V \, \frac{I(V_{k+1} = 0)}{P(V_{k+1} = 0\mid \bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k = \bar{Y}_k=0)} \,\Bigg|\, \bar{A}_k = \bar{a}^g_k\right]\\
+&\stackrel{b}{=}  E\!\left[(1 - Y_k)W_{k-1}^V\,\frac{E\![I(V_{k+1} = 0) \mid\, \bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k = \bar{Y}_k=0]}{P(V_{k+1} = 0\mid \bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k = \bar{Y}_k=0)} \,\Big|\bar{A}_k = \bar{a}^g_k\right] \\
+&\stackrel{c}{=}  E\!\left[(1 - Y_k)W_{k-1}^V\,\frac{P(V_{k+1} = 0\mid \bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k = \bar{Y}_k=0)}{P(V_{k+1} = 0\mid \bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k = \bar{Y}_k=0)} \,\Big|\bar{A}_k = \bar{a}^g_k\right] \\
+&=  E\!\left[(1 - Y_k)W_{k-1}^V\,\Big|\bar{A}_k = \bar{a}^g_k\right] \\
+&\stackrel{d}=  E\!\left[(1 - Y_k)(1-Y_{k-1})W_{k-1}^V\,\Big|\bar{A}_k = \bar{a}^g_k\right] \\
+ &=  E\!\left[(1 - Y_k)W_{k-1} - Y_k (1-Y_{k-1})W_{k-1}^V\,\Big|\bar{A}_k = \bar{a}^g_k\right] \\
+&=  E\!\left[(1 - Y_k)W_{k-1}\Big|\bar{A}_k = \bar{a}^g_k\right] -E\!\left[ Y_k (1-Y_{k-1})W_{k-1}^V\,\Big|\bar{A}_k = \bar{a}^g_k\right], \\
+\end{align*}
+where (a) is by the definition of $W_{k}^V$, and (b) is by the law of iterated expectation: $E[A] = E[E[A|B]]$ To see why (c) is true, let $p = P(V_{k+1} = 0 \mid \bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k = \bar{Y}_k=0)$. Conditioned on \((\bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k = \bar{Y}_k=0)\), the indicator \(I(V_{k+1} = 0)\) is a Bernoulli random variable with parameter \(p\), it takes the value 1 with probability \(p\) and 0 with probability \(1-p\). Thus $ E\!\left[I(V_{k+1} = 0)\mid \bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k = \bar{Y}_k=0\right] = p\cdot 1 + (1-p)\cdot0 = p$.
+(d) is because $Y_k=0$ implies ($Y_k=0,Y_{k-1}=0$). \(\blacksquare\)

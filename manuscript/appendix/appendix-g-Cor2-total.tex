@@ -1,0 +1,80 @@
+\begin{tcolorbox}[title=Corollary 2: Total effect: g-formula under elimination of censoring but not death] 
+
+    Let $V_k = C_k$, and $X_k = (L_k,D_{k+1})$, assume the order
+    of events at each time step is $L_k, A_k, Y_k, D_{k+1},  C_{k+1}$,
+    and consider a hypothetical intervention $g$ 
+    eliminates censoring but not death. 
+    For each individual, assume the three identifying 
+    conditions hold. Then the total effect of the intervention $g$ on the survival outcome at time $K+1$ is given by:
+  
+    \begin{align*}
+        P\Bigl(Y_{K+1}^g &= 1\Bigr) \;=\;
+        P\Bigl(Y^{\bar{a}^g,\bar{c}=0} = 1\Bigr) \\
+        & = \sum_{\bar{l}_K} \; \sum_{k=0}^{K}\;
+        \Pr\Bigl(Y_{k+1} = 1 \,\Bigm|\,
+                \bar{L}_k=\bar{l}_k,\;\bar{A}_k=\bar{a}^g_k,\;
+                \bar{Y}_k=\bar{C}_{k+1}=\bar{D}_{k+1}=0\Bigr)
+        \\
+        & \qquad \times \;
+        \prod_{j=0}^{k}
+        \Bigl\{\,
+          \Pr\Bigl(Y_j=0 \,\Bigm|\,
+                  \bar{L}_{j-1}=\bar{l}_{j-1},\;\bar{A}_{j-1}=\bar{a}^g_{j-1},\;
+                  \bar{Y}_{j-1} = \bar{C}_j=\bar{D}_j = 0\Bigr)
+        \\
+        &\qquad\qquad \times\;
+          \Pr\Bigl(D_{j+1}=0 \,\Bigm|\,
+                \bar{L}_{j}=\bar{l}_{j},\;\bar{A}_j=\bar{a}^g_j,\;
+                \bar{Y}_j = \bar{C}_{j+1}=\bar{D}_j=0 \Bigr)        \\
+        &\qquad\qquad \times\;
+          f\Bigl(l_j \,\Bigm|\,
+                    \bar{l}_{j-1},\;\bar{a}^g_{j-1},\;
+                    \bar{Y}_j=\bar{C}_j=\bar{D}_j=0\Bigr)
+        \Bigr\},
+    \end{align*}  
+
+
+\end{tcolorbox}
+
+
+
+\textbf{Proof}. Setting $\bar{X}_k = (\bar{L}_k,\,\bar{D}_{k+1})$ in Theorem 1, we get: 
+
+\begin{align*}
+        \Pr\bigl(Y_{K+1}^{g} = 1\bigr)
+        &\stackrel{a}{=}\;
+        \sum_{\bar{x}_K, \bar{d}_{K+1}} \sum_{k=0}^K 
+            \Pr\Bigl(Y_{k+1} = 1 \,\Big|\,\hlm{\bar{L}_k = \bar{l}_k,\;\bar{D}_{k+1}=\bar{d}_{k+1}},\;\bar{A}_k=\bar{a}^g_k,\; \bar{Y}_k=0,\;\bar{V}_{k+1}=0 \Bigr) \\[6pt]
+        &\quad\quad \times\;
+        \prod_{j=0}^{k} \Pr\Bigl(Y_j=0 \,\Big|\, \hlm{\bar{L}_{j-1} = \bar{l}_{j-1},\;\bar{D}_{k}=\bar{d}_k},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\;\bar{Y}_{j-1} = \bar{V}_j = 0 \Bigr) \\[6pt]
+        &\quad\quad\quad \times\;
+          f\Bigl(\hlm{l_j,d_{j+1}}) \,\Big|\,\hlm{\bar{l}_{j-1},\;d_{j}},\; \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr)\\
+          &\stackrel{b}{=}\;
+          \sum_{\bar{x}_K, \bar{d}_{K+1}} \sum_{k=0}^K 
+              \Pr\Bigl(Y_{k+1} = 1 \,\Big|\,\bar{L}_k = \bar{l}_k,\;\bar{D}_{k+1}=\bar{d}_{k+1},\;\bar{A}_k=\bar{a}^g_k,\; \bar{Y}_k=0,\;\bar{V}_{k+1}=0 \Bigr) \\[6pt]
+          &\quad\quad \times\;
+          \prod_{j=0}^{k} \Pr\Bigl(Y_j=0 \,\Big|\, \bar{L}_{j-1} = \bar{l}_{j-1},\;\bar{D}_{k}=\bar{d}_k,\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\;\bar{Y}_{j-1} = \bar{V}_j = 0 \Bigr) \\[6pt]
+          &\quad\quad\quad \times\;
+            \hlm{f\Bigl(l_j \Big|\,\bar{l}_{j-1},\;d_{j},\; \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr)}\\
+        &\quad\quad\quad \times\;
+        \hlm{\Pr(D_{j+1}=d_{j+1} \,\Big|\,\bar{l}_{j},\;\bar{D}_j = \bar{d}_{j},\; \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr)}\\
+        &\stackrel{c}{=}\;
+          \sum_{\bar{x}_K, \bar{d}_{K+1}} \sum_{k=0}^K 
+              \Pr\Bigl(Y_{k+1} = 1 \,\Big|\,\bar{L}_k = \bar{l}_k,\;\bar{D}_{k+1}=\bar{d}_{k+1},\;\bar{A}_k=\bar{a}^g_k,\; \bar{Y}_k=0,\;\bar{V}_{k+1}=0 \Bigr) \\[6pt]
+          &\quad\quad \times\;
+          \prod_{j=0}^{k} \Pr\Bigl(Y_j=0 \,\Big|\, \bar{L}_{j-1} = \bar{l}_{j-1},\;\bar{D}_{k}=\bar{d}_k,\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\;\bar{Y}_{j-1} = \bar{V}_j = 0 \Bigr) \\[6pt]
+          &\quad\quad\quad \times\;
+            f\Bigl(l_j \Big|\,\bar{l}_{j-1},\;d_{j},\; \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr)\\
+        &\quad\quad\quad \times\;
+        \Pr\Bigl(D_{j+1}=d_{j+1} \,\Big|\,\bar{l}_{j},\;\bar{D}_j = \bar{d}_{j},\; \hlm{\bar{A}_{j} = \bar{a}^g_{j}},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr)\\
+        &\stackrel{d}{=}\;
+        \hlm{\sum_{\bar{x}_K}} \sum_{k=0}^K 
+              \Pr\Bigl(Y_{k+1} = 1 \,\Big|\,\bar{L}_k = \bar{l}_k,\;\hlm{\bar{D}_{k+1}=0},\;\bar{A}_k=\bar{a}^g_k,\; \bar{Y}_k=0,\;\bar{V}_{k+1}=0 \Bigr) \\[6pt]
+          &\quad\quad \times\;
+          \prod_{j=0}^{k} \Pr\Bigl(Y_j=0 \,\Big|\, \bar{L}_{j-1} = \bar{l}_{j-1},\;\hlm{\bar{D}_{k}=0},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\;\bar{Y}_{j-1} = \bar{V}_j = 0 \Bigr) \\[6pt]
+          &\quad\quad\quad \times\;
+            f\Bigl(l_j \Big|\,\bar{l}_{j-1},\;\hlm{\bar{D}_{j}=0},\; \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr)\\
+        &\quad\quad\quad \times\;
+        \Pr\Bigl(\hlm{D_{j+1}=0} \,\Big|\,\bar{l}_{j},\;\hlm{\bar{D}_j = 0},\; \bar{A}_{j} = \bar{a}^g_{j},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr),
+\end{align*}
+where (a) is by substitution of $V_k = C_k$ and $X_k = (L_k,D_{k+1})$ into Theorem 1; (b) is by rules of probability; (c) is because $\bar{A}_j = \bar{a}_j^g$ is a deterministic function of $\bar{l}_j$ and $\bar{a}^g_{j-1}$, that is $a_j^g=g_j(\bar{l}_j,\bar{a}^g_{j-1})$; and (d) is because $Y_{k+1}=1$ can only occur if $D_j=0$ for all $j=0,\ldots,k$, thus all sequences of $d_j$ drop out of the sum except the all-zeros sequence. \(\blacksquare\) 

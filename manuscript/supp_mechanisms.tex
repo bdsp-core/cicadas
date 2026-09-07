@@ -1,0 +1,103 @@
+\subsection{Censoring Model: Full Specification}
+
+In simulating observational (non-RCT) data, as in the observational cohort of the main text, patients may be censored due to deviation from following the closed-loop control strategy. The censoring model specified in this section is used solely to generate realistic observational datasets for simulation and validation purposes. Its role is to induce informative dropout and treatment-dependent protocol deviation, reflecting common features of ICU data that bias naive survival analyses. When applying the parametric g-formula to an observed dataset under the identification assumptions in Section~\ref{sec:prelim} of the main text, an explicit censoring model is not required: outcome and disease-evolution models are estimated conditional on remaining alive and uncensored.
+
+We model censoring using a discrete-time hazard function \( h^{(c)}_{i,t} \), defined as the probability that patient \( i \) becomes censored in interval \( (t, t+1) \) given that they are uncensored up to time \( t \):
+\[
+h^{(c)}_{i,t} = P\!\left(C_{i,t+1} = 1 \,\middle|\, C_{i,t} = 0, \,\bar{L}_{i,t}, \,\bar{A}_{i,t} \right).
+\]
+
+The logit of the censoring hazard depends on treatment status:
+
+\begin{equation}
+\text{logit}\,h^{(c)}_{i,t} =
+\begin{cases}
+\beta_0 + \beta_1 \left(\frac{\sum_{s=0}^{t} A_{i,s}}{A_{\mathrm{norm}}}\right) + \beta_2 \left(\frac{t}{T_{\max}}\right)^2, & \text{if } A_{i,t} >0 \ \text{(treated)}, \\[6pt]
+\beta_3 + \beta_4 \left(\frac{\sum_{s=0}^{t} L_{i,s}}{L_{\mathrm{norm}}}\right) + \beta_5 \left(\frac{t}{T_{\max}}\right)^2, & \text{if } A_{i,t}=0 \ \text{(untreated)}.
+\end{cases}
+\end{equation}
+
+This specification reflects a deliberately simplified censoring mechanism designed for simulation. 
+Among untreated patients ($A_{i,t}=0$), censoring is driven by cumulative disease burden 
+(e.g., patients becoming too ill to continue protocolized monitoring), whereas among treated patients 
+($A_{i,t}>0$), censoring is driven primarily by cumulative treatment burden 
+(e.g., toxicity, complications, or decisions to discontinue aggressive therapy) and time. 
+Because treatment is preferentially initiated in sicker patients and modifies their disease trajectories, 
+disease burden remains indirectly related to censoring in the treated group through its influence on treatment exposure. 
+Our goal is not to reproduce a clinically exact censoring process, but to generate realistic, 
+informative censoring that depends on time-varying prognostic factors in a way that challenges standard survival methods.
+
+Here:
+\begin{itemize}
+    \item $\text{Rx}_i$ denotes the patient's baseline treatment assignment 
+    (1 = treated, 0 = untreated) used for labeling or stratification; 
+    in contrast, $A_{i,t}$ represents the time-varying treatment intensity 
+    actually administered during the simulation.
+    \item $\beta_0 = -5$ and $\beta_3 = -5$ are baseline log-odds of censoring 
+    for treated and untreated patients, respectively.
+    \item $\beta_1 = 2.0$ models treatment burden leading to discontinuation.
+    \item $\beta_4 = 2.0$ models disease burden leading to dropout in untreated patients.
+    \item $\beta_2 = 0.1$ and $\beta_5 = 1.5$ capture time-varying increases in censoring risk.
+    \item $A_{\mathrm{norm}} = 207$ and $L_{\mathrm{norm}} = 24$ normalize cumulative exposures.
+    \item $T_{\max} = 170$ hours scales the time variable.
+\end{itemize}
+
+This censoring mechanism is \emph{informative}, because it depends on cumulative treatment burden and cumulative disease burden, both of which are prognostic for mortality. This has important implications: Standard Kaplan--Meier estimates will be biased under this censoring process (Figure~\ref{fig:swimmer_survival_rct}B of the main text). By contrast, the parametric g-formula naturally accounts for informative censoring.
+
+When simulating data in RCT mode, no censoring occurs (\( h^{(c)}_{i,t} = 0 \) for all \( i,t \)), preserving the integrity of the randomized comparison.
+
+
+\subsection{Treatment Assignment Model: Full Specification}
+
+
+To create realistic confounding by indication in the observational data, we model a biased treatment assignment mechanism that mimics clinical practice, where physicians preferentially treat patients with more severe disease. 
+Although treatment $A_t$ is continuous in our simulation (representing a drug infusion rate dynamically adjusted under a closed-loop control policy), we first define a binary baseline assignment indicator 
+($A_{i,0} > 0$ vs.\ $A_{i,0} = 0$) to determine which patients enter the treated versus untreated regime. 
+Once assigned, treated patients receive a time-varying continuous treatment trajectory governed by the policy $g_t(\bar{L}_t, \bar{A}_{t-1})$ defined in Section~\ref{sec:pkpd_model}. 
+This setup preserves the continuous nature of treatment while allowing us to simulate realistic confounding by indication at baseline.
+
+The probability that patient $i$ receives treatment at baseline (i.e., $A_{i,0} > 0$) is determined by a logistic regression model incorporating features of the early disease trajectory and baseline covariates:
+\begin{equation}
+\begin{aligned}
+\text{logit}\!\left[
+P\!\left(A_{i,0} > 0 \,\middle|\, \bar{L}_{i,10}, \text{SOFA}_i, \text{Age}_i\right)
+\right]
+&= \beta_0 
++ \beta_1 \bar{L}_{i,\mathrm{early}} 
++ \beta_2 L_{i,\max} \\
+&\quad
++ \beta_3 L_{i,\mathrm{growth}}
++ \beta_4 L_{i,\mathrm{slope}}
++ \beta_5 L_{i,\mathrm{accel}} \\
+&\quad
++ \beta_6 \text{SOFA}_i 
++ \beta_7 \text{Age}_i 
++ \eta_i .
+\end{aligned}
+\end{equation}
+where:
+\begin{itemize}
+    \item $\bar{L}_{i,\mathrm{early}}$ is the mean disease severity over the first 10 time points;
+    \item $L_{i,\max}$ is the maximum disease severity in the early trajectory;
+    \item $L_{i,\mathrm{growth}} = (L_{i,10} - L_{i,1}) / (L_{i,1} + 0.01)$ is the relative early growth rate;
+    \item $L_{i,\mathrm{slope}}$ is the fitted linear slope of the early disease trajectory;
+    \item $L_{i,\mathrm{accel}}$ is the change in slope (acceleration) across the early phase;
+    \item $\eta_i \sim \mathcal{N}(0, 0.3^2)$ adds stochastic variation.
+\end{itemize}
+
+The coefficients were calibrated to create substantial but realistic confounding:
+\begin{itemize}
+    \item $\beta_0 = -0.5$ (baseline log-odds)
+    \item $\beta_1 = 0.8$, $\beta_2 = 0.6$, $\beta_3 = 1.2$, $\beta_4 = 1.0$, $\beta_5 = 0.8$ (disease severity effects)
+    \item $\beta_6 = 0.5$ (SOFA score effect)
+    \item $\beta_7 = -0.3$ (age effect)
+\end{itemize}
+
+This mechanism produces substantial confounding by indication: treated patients have 1.9-fold higher mean disease severity and 1.2-fold faster disease progression rates in the first 20 hours compared to untreated patients, with treatment assignment probability of 71.7\% (substantial deviation from the 50\% expected under randomization). 
+Age shows no significant association with treatment ($p = 0.66$), while baseline SOFA scores are mildly associated ($p = 0.04$). 
+This confounding pattern ensures that naive analyses will show biased treatment effects, while properly adjusted causal inference methods can recover the true treatment effect.
+
+Because treatment intensity $A_{i,t}$ remains continuous and dynamically updated throughout the simulated trajectory, the g-formula’s positivity assumption holds automatically by construction within the simulated range of feasible doses.
+
+We emphasize that Sections~4.1--4.5 define a complete data-generating mechanism for simulation studies; only the disease-evolution and outcome models are required inputs for g-formula estimation in applied settings.
+

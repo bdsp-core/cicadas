@@ -1,0 +1,184 @@
+\subsection{Setup and assumptions}
+
+\subsubsection{Structure of the observed data}
+\label{sssec:structure-data}
+Consider a longitudinal study observed at discrete times \(k = 0, 1, \ldots, K\). At each time \(k\), events occur in the following order:
+\[
+  X_k \;\;\longrightarrow\;\; A_k \;\;\longrightarrow\;\; Y_k \;\;\longrightarrow\;\; V_{k+1}.
+\]
+
+with a causal graph in which all past variables influence all future variables. The first two time steps of this graph are shown in Figure~\ref{fig:DAG-supp}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance = 1cm and 1.6cm,
+  >=Latex, baseline,
+  every node/.style={inner sep=0pt, anchor=center},
+  main/.style={line width=0.9pt, draw=black},
+  uniform/.style={line width=0.9pt, draw=black}
+]
+  % ----- time-0 nodes -----
+  \node (L0) {$L_{0}$};
+  \node[right=of L0] (A0) {$A_{0}$};
+  \node[right=of A0] (Y0) {$Y_{0}$};
+  \node[right=of Y0] (C1) {$C_{1}$};
+  % ----- time-1 nodes (shifted right) -----
+  \node[below=2cm of L0, xshift=1cm] (L1) {$L_{1}$};
+  \node[right=of L1] (A1) {$A_{1}$};
+  \node[right=of A1] (Y1) {$Y_{1}$};
+  \node[right=of Y1] (C2) {$C_{2}$};
+  % ----- within-time arrows (order inside each interval) -----
+  \draw[->,uniform] (L0) -- (A0);
+  \draw[->,uniform] (A0) -- (Y0);
+  \draw[->,uniform] (Y0) -- (C1);
+  \draw[->,uniform] (L1) -- (A1);
+  \draw[->,uniform] (A1) -- (Y1);
+  \draw[->,uniform] (Y1) -- (C2);
+  % ----- cross-time "same-variable" persistence -----
+  \draw[->,uniform,bend left=20] (L0) to (L1);
+  \draw[->,uniform,bend left=20] (A0) to (A1);
+  \draw[->,uniform,bend left=20] (Y0) to (Y1);
+  \draw[->,uniform,bend left=20] (C1) to (C2);
+  % ----- cross-time: all past → all future (now uniform black) -----
+  % from L0
+  \draw[->,uniform,bend left=16] (L0) to (A1);
+  \draw[->,uniform,bend left=22] (L0) to (Y1);
+  \draw[->,uniform,bend right=8] (L0) to (C2);
+  % from A0
+  \draw[->,uniform,bend left=12] (A0) to (L1);
+  \draw[->,uniform,bend left=18] (A0) to (Y1);
+  \draw[->,uniform,bend left=24] (A0) to (C2);
+  % from Y0
+  \draw[->,uniform,bend left=10] (Y0) to (L1);
+  \draw[->,uniform,bend left=14] (Y0) to (A1);
+  \draw[->,uniform,bend left=20] (Y0) to (C2);
+  % from C1
+  \draw[->,uniform,bend left=12] (C1) to (L1);
+  \draw[->,uniform,bend left=18] (C1) to (A1);
+  \draw[->,uniform,bend left=24] (C1) to (Y1);
+\end{tikzpicture}
+\caption{Causal graph for the data.}
+\label{fig:DAG-supp}
+\end{figure}
+
+Specifically:
+
+\begin{itemize}
+    \item \(X_k\) is a vector of covariates measured at time \(k\).
+    \item \(A_k\) is the treatment assigned at time \(k\).
+    \item \(Y_k\) is an indicator that the primary outcome has occurred by time \(k\). Thus, \(Y_k = 1\) means the event (of interest) was observed by or at time \(k\), and \(Y_k = 0\) otherwise.
+    \item \(V_{k+1}\) is an indicator denoting whether the individual remains \emph{uncensored} immediately \emph{after} time \(k\). 
+    Typically, \(V_{k+1} = 0\) means “still uncensored by time \(k+1\)”, while \(V_{k+1} = 1\) means the subject is censored at or before \(k+1\).
+\end{itemize}
+
+We let \(\bar{X}_k = (X_0, X_1, \ldots, X_k)\), \(\bar{A}_k = (A_0, A_1, \ldots, A_k)\), \(\bar{Y}_k=(Y_0, Y_1,\ldots, Y_k)\), and \(\bar{V}_k=(V_0, V_1, \ldots,V_k)\).  By convention, we set \(V_0 = 0\) for all individuals (nobody is censored before baseline).  
+
+\paragraph{Note on indexing.}
+There are \(K+1\) total \emph{treatment times}: \(k=0,\dots,K\).  No new exposure is assigned \emph{after} time \(K\).  The final outcome is assessed at time \(K+1\). Hence, we write the treatment sequence as \(\bar{A} = (A_0,\dots,A_K)\) rather than extending to \(A_{K+1}\).  
+\paragraph{Note on censoring.}
+We consider two variants:
+\begin{enumerate}
+  \item Total effect: \(V_{k+1} = \bigl(C_{k+1}, D_{k+1}\bigr)\), where \(C_{k+1}\) indicates administrative censoring or loss to follow-up and \(D_{k+1}\) indicates a competing event (e.g.\ death).
+  \item Direct effect: \(V_{k+1} = C_{k+1}\) alone, treating any competing event the same way as any other form of censoring (or truncation by death).
+\end{enumerate}
+The algebraic derivation is the same, but the interpretation of the causal contrast (direct or total effect) and the form of the equation representing \(V\) differ depending on which components are included in \(V\).  
+
+\subsubsection{Definitions of causal effects}
+\label{sssec:causal-effects}
+
+Let \(g = (g_0, \ldots, g_K)\) denote a deterministic intervention, regime, or treatment strategy (static or dynamic) on \(A_k\) that may depend on the past measured covariate and treatment history, and that also sets to zero or eliminates the censoring process in \(V\).  For notational simplicity, we denote 
+\[
+   a^g_k \;=\; g_k\bigl(\bar{x}_k, \bar{a}^g_{k-1}\bigr),
+\]
+meaning that at each time \(k\), the intervention function \(g_k\) assigns the exposure \(A_k\) based on the treatment and covariate values in the past.  An individual’s full exposure sequence under \(g\) is \(\bar{a}^g = (a^g_0,a^g_1,\dots,a^g_K)\).  Likewise, under the hypothetical elimination of censoring (and possibly competing events), the counterfactual outcome is denoted
+\[
+  Y^g \equiv Y_{K+1}^{\bar{a}^g, \,\bar{v} = 0}.
+\]
+Here, “\(\bar{v} = 0\)” indicates an intervention that sets \(V_{k+1}=0\) for all \(k\), i.e.\ no individual is censored (which, in Case 1, also means individual ever has a competing event). 
+
+Our goal in typical applications is to compare the risk or mean of \(Y_{K+1}\) under two or more possible intervention rules.  For instance, we might define a dynamic rule “treat whenever \(X_k\) is above some threshold”.  
+% In one derivation below, we \(V_{k+1} = (C_{k+1}, D_{k+1})\), so that the intervention \(\bar{v}=0\) \emph{eliminates} both censoring and competing events (death).  In another, we let \(V_{k+1} = C_{k+1}\) alone, so that we only eliminate censoring, while letting competing events occur as in the natural course.
+
+\subsubsection{Identifying assumptions and the g-formula}
+\label{sssec:identifying}
+
+Throughout, we assume three conditions that allow identification via the g-formula (for each \(k=0,\dots,K\)):
+
+\begin{tcolorbox}[title= Identification Conditions, breakable, enhanced jigsaw]
+
+\begin{enumerate}
+    \item \textbf{Exchangeability.}  
+      \[
+         (Y_{k+1}^g,\ldots,Y_{K+1}^g)
+         \;\;\amalg\;\; \bigl(A_k, \,V_{k+1}\bigr)
+         \;\bigm|\; \bar{X}_k = \bar{x}_k, \,\bar{A}_{k-1} = \bar{a}^g_{k-1},\,V_k=Y_k=0.
+      \]
+      In words, once we adjust for the past \((X,A)\) among individuals who remain in the study \(\bigl(V_k =0\bigr)\) and have not yet experienced \(Y=1\), the counterfactual outcome is independent of how the next exposure \(A_k\) or censoring/competing-event indicator \(V_{k+1}\) is realized.
+
+    \item \textbf{Positivity.}
+      The statement below is written in the discrete-case form (point mass on the intervention
+      value \(a_k^g\)) for notational simplicity. When \(A_k\) is continuous, it should be read
+      as the continuous-neighborhood overlap condition given in \S 2.2 of the main text, which
+      reduces to the discrete form when \(A_k\) is discrete.
+      \begin{align*}
+              & f_{\bar{X}_k,\,\bar{A}_{k-1},\,V_k,\,Y_k}\bigl(\bar{x}_k,\,\bar{a}_k,\,0,\,0\bigr)\neq 0  \implies  \\
+              & P\Bigl(A_k = a^g_k,\; V_{k+1}=0 \;\bigm|\; \bar{X}_k=\bar{x}_k,\; \bar{A}_{k-1}=\bar{a}^g_{k-1},\; V_k = Y_k = 0\Bigr) > 0.
+      \end{align*}
+
+      In words: at any time \(k\) with a positive-density observed history, the mechanism
+      assigning treatment and censoring must have positive probability of producing the value
+      demanded by the intervention (or any value in its neighborhood) while remaining alive
+      and uncensored.
+
+    \item \textbf{Consistency.}   
+      \[\bar{A}_K = \bar{a}^g_K, \quad \bar{V}_{K+1}=0 \implies   \bar{X}_K =\bar{X}_K^g, \quad Y_{K+1} \;=\;Y_{K+1}^g.\] 
+      That is, if the intervention \(\bar{A}^g\) and censoring elimination \(\bar{v}=0\) match the observed data, then the observed outcome agrees with its counterfactual counterpart.
+\end{enumerate}
+\end{tcolorbox}
+
+Under these assumptions, the counterfactual risk or mean of \(Y_{K+1}\) 
+under any intervention \(\bar{A}^{g,\bar{v}=0}\) is identified by the g-formula.
+
+
+
+%  --------------------------------
+% Get rid of everything after this?
+%  --------------------------------
+
+\begin{align*}
+  \Pr\bigl(Y_{K+1}^{g,\bar{c}=0} = 1\bigr)
+  &=\;
+  \sum_{\bar{x}_K}\;\sum_{k=0}^{K}
+  \Pr\Bigl(Y_{k+1}=1 \,\Big|\,\bar{X}_k=\bar{x}_k,\;\bar{Y}_k=0,\;\bar{C}_{k+1}=0,\;\bar{A}_k=\bar{a}_k
+  \Bigr) \\
+    &\quad\times\;
+    \prod_{j=0}^{k}
+      \Pr\Bigl(Y_j=0 \,\Big|\,
+        \bar{X}_j=\bar{x}_j,\;\bar{Y}_{j-1}=0,\;\bar{C}_j=0,\;\bar{A}_j=\bar{a}_j
+      \Bigr) \\
+      &\quad\times\;
+      f\Bigl(x_j \,\Big|\,
+        \bar{x}_{j-1},\;\bar{Y}_{j-1}=0,\;\bar{C}_j=0,\;\bar{A}_{j-1}=\bar{a}_{j-1}
+        \Bigr)
+  \\[6pt]
+\end{align*}
+
+We consider two cases, corresponding to different choices of the censoring vector \(C_{k+1}\):
+\\
+\begin{itemize}
+  \item \emph{Total effect}: If we set \(C_{k+1} = \bigl(C_{k+1}, D_{k+1}\bigr)\), where \(C_{k+1}\) indicates loss to follow-up and \(D_{k+1}\) indicates a competing event, then the g-formula gives the \emph{total effect} of the intervention \(g\) on the outcome \(Y\): the effect that would be observed if the intervention were implemented and all censoring and competing events were eliminated. In this case, the g-formula is given by Corollary 1. 
+          
+
+  \item \emph{Direct effect}: If we set \(V_{k+1} = C_{k+1}\), 
+        this indicates that we with estimate the effect after eliminate censoring due to loss to follow up 
+        but not due to the competing event. 
+        In that setting, if the subject experiences \(D_k=1\) before \(Y\), they are removed from the risk set.  
+        In this setting, we group the competing event with the time-varying covariates, 
+        \(X_{k} = (L_k,D_k)\). Then the g-formula is given by Corollary 2.
+        
+
+\end{itemize}
+
+
+All derivations in this appendix follow from these core assumptions and definitions, using the standard arguments for the g-formula and for its IPW representation (see, e.g., Robins 1986; Hernán and Robins 2020). 

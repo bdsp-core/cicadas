@@ -1,0 +1,111 @@
+\subsection{Derivation of the Monte Carlo Implementation of the Parametric G-Formula}
+\label{app:gformula_derivation}
+
+Here provide a brief derivation showing why forward simulation from
+the disease-evolution model generates sample paths from the post-intervention
+covariate distribution $f^g(\bar{L}_K)$, and why Monte Carlo averaging over such
+trajectories yields a valid numerical implementation of the parametric g-formula.
+
+\subsubsection{Factorization of the Post-Intervention Covariate Distribution}
+
+Consider a deterministic dynamic treatment policy
+$g = (g_0,\ldots,g_K)$, where at each time $t$ the treatment is assigned as
+$A_t = g_t(\bar{L}_t,\bar{A}_{t-1})$.
+Under the assumptions of consistency, sequential ignorability, and positivity,
+the joint distribution of the covariate history under policy $g$ and no censoring,
+$f^g(\bar{l}_K)$, is identified by the g-formula.
+
+By repeated application of the chain rule and conditioning on survival and lack
+of censoring up to each time point, this distribution admits the factorization
+\begin{align}
+f^g(\bar{l}_K)
+&=
+f(l_0)
+\prod_{t=0}^{K-1}
+f\!\left(
+l_{t+1}
+\,\middle|\,
+\bar{l}_t,\,
+\bar{a}^g_t,\,
+\bar{C}_t = \bar{Y}_t = 0
+\right),
+\label{eq:fg_factorization}
+\end{align}
+where $\bar{a}^g_t = (a^g_0,\ldots,a^g_t)$ is the treatment history induced by policy
+$g$. Sequential ignorability ensures that each conditional density in
+\eqref{eq:fg_factorization} coincides with the corresponding conditional density
+estimable from the observed data-generating process.
+
+\subsubsection{G-Formula for Discrete-Time Survival}
+
+For a discrete-time survival outcome, the probability of surviving through time
+$K+1$ under policy $g$ can be written as
+\begin{align}
+P(Y^g_{K+1} = 0)
+&=
+\sum_{\bar{l}_K}
+\left[
+\prod_{t=0}^{K}
+P\!\left(
+Y_{t+1} = 0,\,
+C_{t+1} = 0
+\,\middle|\,
+\bar{L}_t = \bar{l}_t,\,
+\bar{A}_t = \bar{a}^g_t,\,
+\bar{C}_t = \bar{Y}_t = 0
+\right)
+\right]
+f^g(\bar{l}_K).
+\label{eq:gformula_survival}
+\end{align}
+
+Substituting the factorization of $f^g(\bar{l}_K)$ from
+\eqref{eq:fg_factorization} into \eqref{eq:gformula_survival} yields an expression
+for $P(Y^g_{K+1} = 0)$ as an expectation with respect to the post-intervention
+covariate distribution.
+
+\subsubsection{Monte Carlo Approximation}
+
+Equation \eqref{eq:gformula_survival} involves a summation over all possible
+covariate trajectories $\bar{l}_K$, which is computationally infeasible in
+all but trivial settings. However, because $f^g(\bar{l}_K)$ is fully specified
+by the product of conditional transition densities in
+\eqref{eq:fg_factorization}, we can generate independent draws
+$\bar{l}^{(1)}_K,\ldots,\bar{l}^{(M)}_K \sim f^g(\bar{L}_K)$
+by recursively simulating
+\[
+L_{t+1}^{(m)} \sim
+f\!\left(
+L_{t+1}
+\,\middle|\,
+\bar{L}^{(m)}_t,\,
+\bar{A}^{g}_t,\,
+\bar{C}_t = \bar{Y}_t = 0
+\right),
+\qquad
+t = 0,\ldots,K-1,
+\]
+with $A_t = g_t(\bar{L}^{(m)}_t,\bar{A}^{(m)}_{t-1})$.
+
+The g-formula integral can then be approximated by the Monte Carlo estimator
+\begin{align}
+P(Y^g_{K+1} = 0)
+&\approx
+\frac{1}{M}
+\sum_{m=1}^{M}
+\prod_{t=0}^{K}
+P\!\left(
+Y_{t+1} = 0,\,
+C_{t+1} = 0
+\,\middle|\,
+\bar{L}_t = \bar{l}^{(m)}_t,\,
+\bar{A}_t = \bar{a}^g_t,\,
+\bar{C}_t = \bar{Y}_t = 0
+\right),
+\end{align}
+which converges almost surely to the true g-formula estimand as
+$M \to \infty$ by the law of large numbers.
+
+Thus, forward simulation from the disease-evolution model under policy $g$,
+followed by averaging of the corresponding survival probabilities, constitutes
+a valid numerical implementation of the parametric g-formula.

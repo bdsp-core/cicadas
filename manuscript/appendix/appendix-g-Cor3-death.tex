@@ -1,0 +1,53 @@
+\begin{tcolorbox}[title=Corollary 3: g-formula for competing event]
+
+    Let $g$ be a deterministic intervention that eliminates censoring and imposes treatment $a^g_k = g_k(\bar{l}_k,\bar{a}^g_{k-1})$, and assume the following identifying assumptions hold:
+    \begin{enumerate}
+        \item \textbf{Exchangeability.}  
+          \[
+             (D_{k+1}^g,\ldots,D_{K+1}^g)
+             \;\;\amalg\;\; \bigl(A_k, \,C_{k+1}\bigr)
+             \;\bigm|\; \bar{L}_k = \bar{l}_k, \,\bar{A}_{k-1} = \bar{a}^g_{k-1},\,C_k=Y_k=0.
+          \]
+    
+        \item \textbf{Positivity.}
+          (As in Appendix Theorem~1, the statement below is written in the discrete-case form;
+          for continuous \(A_k\) it is interpreted as the continuous-neighborhood overlap
+          condition of \S 2.2 of the main text.)
+          \begin{align*}
+                  & f_{\bar{L}_k,\,\bar{A}_{k-1},\,C_k,\,D_k}\bigl(\bar{l}_k,\,\bar{a}_k,\,0,\,0\bigr)\neq 0  \implies  \\
+                  & P\Bigl(A_k = a^g_k,\; C_{k+1}=0 \;\bigm|\; \bar{L}_k=\bar{l}_k,\; \bar{A}_{k-1}=\bar{a}^g_{k-1},\; C_k = Y_k = 0\Bigr) > 0
+          \end{align*}
+    
+    
+        \item \textbf{Consistency.}   
+          \[\bar{A}_K = \bar{a}^g_K, \quad \bar{C}_{K+1}=0 \implies   \bar{L}_K =\bar{L}_K^g, \quad Y_{K+1} \;=\;Y_{K+1}^g,\] 
+        where we are taking $\bar{Y}_k$ to be an implicit component of $\bar{L}_k$. 
+    \end{enumerate}
+
+    Then the counterfactual risk of death by $K+1$ under $\bar{a}^g_k$ and elimination of censoring is given by
+  
+    \begin{align*}
+      \Pr\bigl(D_{K+1}^{g} = 1\bigr)
+      &=\;
+      \sum_{\bar{l}_K} \sum_{k=0}^K 
+          \Pr\Bigl(D_{k+1} = 1 \,\Big|\,\bar{L}_k = \bar{l}_k,\;\bar{A}_k=\bar{a}^g_k,\; \bar{D}_k=0,\;\bar{C}_{k+1}=0 \Bigr) \\[6pt]
+      &\quad\quad \times\;
+      \prod_{j=0}^{k} \Pr\Bigl(D_j=0 \,\Big|\, \bar{L}_{j-1} = \bar{l}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\;\bar{D}_{j-1} = \bar{C}_j = 0 \Bigr) \\[6pt]
+      &\quad\quad\quad \times\;
+        f\Bigl(l_j \,\Big|\,\bar{l}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{D}_{j} =\bar{C}_j = 0 \Bigr)
+    \end{align*}
+    
+    Similarly, the counterfactual probability of survival up to $K+1$ under $\bar{a}^g_k$ and elimination of censoring is given by
+    \begin{align*}
+      \Pr\bigl(D_{K+1}^{g} = 0\bigr)
+      &=\;
+      \sum_{\bar{l}_K} \Pr\Bigl(D_{K+1} = 0 \,\Big|\,\bar{L}_K = \bar{l}_K,\;\bar{A}_K=\bar{a}^g_k,\; \bar{D}_K=0,\;\bar{C}_{K+1}=0 \Bigr) \\[6pt]
+      &\quad \times
+      \prod_{j=0}^{K} \Pr\Bigl(D_j=0 \,\Big|\, \bar{L}_{j-1} = \bar{l}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{D}_{j-1} = 0,\;\bar{C}_j = 0 \Bigr) \\[6pt]
+      &\quad\quad \times\;
+        f\Bigl(l_j \,\Big|\,\bar{l}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{D}_{j} = 0,\;\bar{C}_j = 0 \Bigr)
+    \end{align*}
+
+\end{tcolorbox}
+
+\textbf{Proof:} The result follows from Theorem 1 by replacing $\bar{Y}_{k+1}$, $\bar{V}_{k+1}$, $\bar{X}_k$ and the corresponding counterfactuals from Theorem 1 with $\bar{D}_{k+1}$, $\bar{C}_{k+1}$, $\bar{L}_k$ and their corresponding counterfactuals, respectively $\blacksquare$

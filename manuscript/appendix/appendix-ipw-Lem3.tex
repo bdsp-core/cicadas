@@ -1,0 +1,35 @@
+\begin{tcolorbox}[title=IPW Lemma 3]
+For each \(k = 0, \ldots, K\),
+\begin{align*}
+E\Bigl[Y_{k+1}(1 - Y_k)W_k^V\mid \bar{A}_k = \bar{a}^g_k \Bigr] &= \sum_{\bar{x}_k} Pr\Bigl(Y_{k+1} = 1\mid \bar{X}_k = \bar{x}_k,\; \bar{A}_k = \bar{a}^g_k,\; \bar{Y}_k = \bar{V}_{k+1} = 0\;\Bigr) \nonumber\\
+&\quad \times \prod_{j=0}^k Pr\Bigl(Y_j = 0\mid \bar{X}_{j-1} = \bar{x}_{j-1},\; \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j-1} = \bar{V}_j = 0\; \Bigr) \, \\
+&\quad \quad \times f\Bigl(x_j\mid \bar{x}_{j-1}, \bar{A}_{j-1} = \bar{a}^g_{j-1}, \bar{Y}_j = \bar{V}_j = 0\; \Bigr),
+\end{align*}
+and
+\begin{align*}
+E\Bigl[(1 - Y_k)W_k^V\mid \bar{A}_k = \bar{a}^g_k\Bigr] &= \sum_{\bar{x}_{k-1}} Pr\Bigl(Y_k = 0\mid \bar{X}_{k-1} = \bar{x}_{k-1},\; \bar{A}_{k-1} = \bar{a}^g_{k-1},\; \bar{Y}_{k-1} = \bar{V}_k = 0\; \Bigr) \nonumber\\
+&\quad \times \prod_{j=0}^{k-1} Pr\Bigl(Y_j = 0\mid \bar{X}_{j-1} = \bar{x}_{j-1},\; \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j-1} = \bar{V}_j = 0\; \Bigr) \\
+& \quad \quad \times  f\Bigl(x_j\mid \bar{x}_{j-1}, \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_j = \bar{V}_j = 0\; \Bigr).
+\end{align*}
+\end{tcolorbox}
+
+\textbf{Proof.} 
+\begin{align*}
+&E\Bigl[Y_{k+1}(1 - Y_k)W_k^V\mid \bar{A}_k=\bar{a}_k\Bigr] \\
+&\stackrel{a}{=}\sum_{\bar{y}_{k+1}}\sum_{\bar{x}_k}\sum_{\bar{v}_{k+1}} y_{k+1}(1-y_k)
+\left[\prod_{j=0}^k \frac{I(v_{j+1}=0)}{Pr(V_{j+1}=0\mid x_j,\bar{A}_k = \bar{a}^g_k, \,V_j=Y_j=0)}\right] \, f\Bigl(\bar{y}_{k+1},\,\bar{x}_k,\,\bar{v}_{k+1}\mid \bar{A}_k=\bar{a}^g_k\Bigr) \\
+&\stackrel{b}{=}\sum_{\bar{y}_{k+1}}\sum_{\bar{x}_k}\sum_{\bar{v}_{k+1}} y_{k+1}(1-y_k)
+\left[\prod_{j=0}^k \frac{I(v_{j+1}=0)}{Pr(V_{j+1}=0\mid x_j,\bar{A}_k = \bar{a}^g_k, \,V_j=Y_j=0)}\right] \\
+& \quad \quad \quad \times  \prod_{j=0}^k \, f\Bigl(x_j\mid \bar{x}_{j-1},\, \bar{a}^g_j, \bar{y}_j,\,\bar{v}_j \Bigr) \; f\Bigl(y_{j+1}\mid \bar{x}_j,\, \bar{a}^g_j, \bar{y}_j, \bar{v}_{j+1} \Bigr) \; f\Bigl(v_{j+1}\mid \bar{x}_j,\,\bar{a}^g_j, \bar{y}_j, \bar{v}_j \Bigr). \\
+&\stackrel{c}{=}\sum_{\bar{x}_k} \Pr\Bigl[ Y_{k+1}=1|\bar{X}_k=\bar{x}_k, \bar{A}_k = \bar{a}^g_k, \bar{Y}_k=\bar{V}_{k+1}=0\Bigr] \\
+&\times 
+\left[\prod_{j=0}^k \frac{f\Bigl(y_{j+1}=0 \mid \bar{x}_j,\, \bar{a}^g_j, \bar{y}_j, \bar{v}_{j+1} \Bigr) \; Pr\Bigr(V_{j+1}=0\mid x_j,\bar{A}_k = \bar{a}^g_k, \,V_j=Y_j=0\Bigl)f\Bigl(x_j\mid \bar{x}_{j-1},\, \bar{a}^g_j, \bar{y}_j,\,\bar{v}_j \Bigr) }{Pr(V_{j+1}=0\mid x_j,\bar{A}_k = \bar{a}^g_k, \,V_j=Y_j=0)}\right]\\
+&\stackrel{d}{=}\sum_{\bar{x}_k} Pr\Bigl(Y_{k+1} = 1\mid \bar{X}_k = \bar{x}_k,\; \bar{A}_k = \bar{a}^g_k,\; \bar{Y}_k = \bar{V}_{k+1} = 0\;\Bigr) \nonumber\\
+&\quad \times \prod_{j=0}^k Pr\Bigl(Y_j = 0\mid \bar{X}_{j-1} = \bar{x}_{j-1},\; \bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j-1} = \bar{V}_j = 0\; \Bigr) \, \\
+&\quad \quad \times f\Bigl(x_j\mid \bar{x}_{j-1}, \bar{A}_{j-1} = \bar{a}^g_{j-1}, \bar{Y}_j = \bar{V}_j = 0\; \Bigr),
+\end{align*}
+where (a) is by definition of $W_k^V = \prod_{j=0}^k \frac{I(V_{j+1} = 0)}{Pr(V_{j+1} = 0\mid X_j,\,V_j = Y_j = 0,\,A = a)}$; (b) is by laws of probability; (c) is because the indicator functions \(I(v_{j+1}=0)\) ensure that only sequences with \(v_{j+1}=0\) for \(j=0,\ldots,k\) contribute, and the factor \(y_{k+1}(1-y_k)\) forces \(y_{k+1}=1\) and \(y_k=0\), so that the only nonzero contributions come from the sequences satisfying $\bar{Y}_k=0,y_{k+1}=1,\bar{V}_{k+1}=0$; (d) is by cancelation and changing notation to match the theorem statement.
+
+The second equality follows from a similar derivation. 
+
+\(\blacksquare\)

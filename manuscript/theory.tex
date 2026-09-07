@@ -1,0 +1,322 @@
+\section{Preliminaries}
+\label{sec:prelim}
+
+\subsection{Causal Effect of Anti-Seizure Medication}
+
+Here we formalize the problem of estimating causal effects from observational longitudinal
+data with time-varying confounding and treatment--confounder feedback loops
+\cite{parikh2023effects,hernan2020causal,young2020causal,young2011comparative,wanis2024grace,robins2009estimation}.
+We consider a longitudinal study observed at discrete times $t \in \{0,1,2,\ldots\}$.
+Throughout, we use bar notation $\bar X_t$ to denote the history of a variable $X$ up to
+time $t$.
+
+\paragraph{Observed data.}
+The variables involved in the analysis are:
+\begin{itemize}
+\item $L_t$: The scalar burden of epileptiform activity (EA) measured from EEG at time
+$t$, as defined in Section~\ref{sec:notation}. This is the quantity the treatment policy
+titrates against. We write $\bar L_t = (L_0,L_1,\ldots,L_t)$. For concreteness, $L_t$
+may be operationalized as the seizure burden per monitoring epoch.
+
+\item $X$: Static baseline clinical characteristics (e.g., age, SOFA score).
+
+\item $H_t = (X,\bar L_t,\bar A_{t-1})$: The observed history through time $t$. This is
+the conditioning set used in the identification assumptions below. Note the distinction
+maintained throughout: policies are functions of the scalar $L_t$, whereas identification
+conditions on the full history $H_t$.
+
+\item $A_t$: Treatment administered at time $t$. In our clinical setting, this is a
+continuous, nonnegative infusion rate (e.g., propofol infusion). We write
+$\bar A_t = (A_0,A_1,\ldots,A_t)$.
+
+\item $C_{t+1}$: Indicator of censoring during the interval $(t,t+1]$, where
+$C_{t+1}=1$ if censoring occurs in $(t,t+1]$ and $C_{t+1}=0$ otherwise. Thus,
+$\bar C_t=(C_1,\ldots,C_t)$ denotes the censoring history through interval $(t-1,t]$,
+and the event ``$\bar C_t=0$'' means uncensored through time $t$.
+
+\item $Y_{t+1}$: Outcome indicator during the interval $(t,t+1]$, where $Y_{t+1}=1$
+if the event occurs in $(t,t+1]$ and $Y_{t+1}=0$ otherwise. We write
+$\bar Y_t=(Y_1,\ldots,Y_t)$, so ``$\bar Y_t=0$'' means event-free through time $t$.
+
+\item $Y^{\bar a,\bar c=0}_{t+1}$: The counterfactual outcome during $(t,t+1]$ under
+treatment history $\bar a$ and hypothetical elimination of censoring (i.e., $\bar c=0$).
+\end{itemize}
+
+\paragraph{Time ordering.}
+At each time $t$, treatment $A_t$ is assigned based on past observed history, and then
+over the subsequent interval $(t,t+1]$ the outcome, censoring, and next covariate value
+are realized. Formally, the within-interval ordering is
+\begin{equation}
+\{\bar L_t,\bar A_{t-1},\bar C_t,\bar Y_t\}
+\longrightarrow A_t
+\longrightarrow \{Y_{t+1},C_{t+1},L_{t+1}\}.
+\end{equation}
+These relationships are illustrated in the causal influence diagram in
+Figure~\ref{fig:DAG2}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance = 1cm and 1.6cm,
+  >=Latex, baseline,
+  every node/.style={inner sep=0pt, anchor=center},
+  main/.style={line width=0.9pt, draw=black},
+  uniform/.style={line width=0.9pt, draw=black}
+]
+  % ----- time-0 nodes -----
+  \node (L0) {$L_{0}$};
+  \node[right=of L0] (A0) {$A_{0}$};
+  \node[right=of A0] (Y0) {$Y_{0}$};
+  \node[right=of Y0] (C1) {$C_{1}$};
+  % ----- time-1 nodes (shifted right) -----
+  \node[below=2cm of L0, xshift=1cm] (L1) {$L_{1}$};
+  \node[right=of L1] (A1) {$A_{1}$};
+  \node[right=of A1] (Y1) {$Y_{1}$};
+  \node[right=of Y1] (C2) {$C_{2}$};
+  % ----- within-time arrows (order inside each interval) -----
+  \draw[->,uniform] (L0) -- (A0);
+  \draw[->,uniform] (A0) -- (Y0);
+  \draw[->,uniform] (Y0) -- (C1);
+  \draw[->,uniform] (L1) -- (A1);
+  \draw[->,uniform] (A1) -- (Y1);
+  \draw[->,uniform] (Y1) -- (C2);
+  % ----- cross-time "same-variable" persistence -----
+  \draw[->,uniform,bend left=20] (L0) to (L1);
+  \draw[->,uniform,bend left=20] (A0) to (A1);
+  \draw[->,uniform,bend left=20] (Y0) to (Y1);
+  \draw[->,uniform,bend left=20] (C1) to (C2);
+  % ----- cross-time: all past → all future (now uniform black) -----
+  % from L0
+  \draw[->,uniform,bend left=16] (L0) to (A1);
+  \draw[->,uniform,bend left=22] (L0) to (Y1);
+  \draw[->,uniform,bend right=8] (L0) to (C2);
+  % from A0
+  \draw[->,uniform,bend left=12] (A0) to (L1);
+  \draw[->,uniform,bend left=18] (A0) to (Y1);
+  \draw[->,uniform,bend left=24] (A0) to (C2);
+  % from Y0
+  \draw[->,uniform,bend left=10] (Y0) to (L1);
+  \draw[->,uniform,bend left=14] (Y0) to (A1);
+  \draw[->,uniform,bend left=20] (Y0) to (C2);
+  % from C1
+  \draw[->,uniform,bend left=12] (C1) to (L1);
+  \draw[->,uniform,bend left=18] (C1) to (A1);
+  \draw[->,uniform,bend left=24] (C1) to (Y1);
+\end{tikzpicture}
+\caption{%
+Causal diagram for a two-period longitudinal data structure illustrating time-varying
+treatment, disease burden, censoring, and outcome processes. At each discrete time $t$,
+the patient’s observed covariates $L_t$ summarize measured prognostic information
+available prior to treatment assignment. Conditional on the history
+$(\bar L_t, \bar A_{t-1})$, treatment $A_t$ is assigned by the clinical decision
+process. Over the subsequent interval $(t,t+1]$, the patient may experience the outcome
+$Y_{t+1}$ (e.g., death), may become censored $C_{t+1}$, and the disease process evolves
+to $L_{t+1}$. Arrows indicate causal dependence across and within time periods,
+including feedback between past treatment and future disease severity, motivating use
+of the parametric g-formula.}
+\label{fig:DAG2}
+\end{figure}
+
+\paragraph{Treatment strategies and estimands.}
+A treatment strategy $g=(g_0,\ldots,g_K)$ is a deterministic dynamic rule that assigns
+\[
+a_t = g_t(\bar L_t,\bar a_{t-1}), \qquad t=0,\ldots,K.
+\]
+Under an intervention $g$, the treatment path $\bar a^g=(a_0^g,\ldots,a_K^g)$ is fixed
+given the realized covariate history, even though the corresponding observed treatment
+variables $\bar A$ are stochastic in observational data. Under the hypothetical
+elimination of censoring, we write the counterfactual outcome at horizon $K+1$ as
+\[
+Y^g_{K+1} \equiv Y^{\bar a^g,\bar c=0}_{K+1}.
+\]
+Our goal is to compare risks under different strategies $g$ and $g'$ via contrasts such
+as $\Pr(Y^g_{K+1}=1)-\Pr(Y^{g'}_{K+1}=1)$.
+
+In our application, the primary strategy of interest $g$ is a closed-loop control policy
+that mimics ICU titration of anti-seizure medication to maintain EA burden below a
+target $\theta$ (Figure~\ref{fig:control-problem}D). A simple proportional--integral (PI)
+policy can be written as
+\begin{equation}
+g_t(\bar L_t,\bar A_{t-1})
+=
+\min\!\left\{A_{\max},\,
+\max\!\left\{0,\, \kappa_p e_t + \kappa_i \sum_{s=0}^{t} e_s \right\}\right\},
+\qquad e_t = L_t-\theta,
+\end{equation}
+where $\kappa_p$ and $\kappa_i$ are proportional and integral gains and $A_{\max}$ is a
+maximum safe dose. This closed-loop structure induces time-varying confounding: sicker
+patients (higher $L_t$) tend to receive more treatment, while treatment affects future
+$L_{t+1}$.
+
+\subsection{Identification Assumptions}
+
+Before using observational data to estimate causal effects, we specify assumptions under
+which the counterfactual estimands are identifiable.
+
+In plain language, three conditions must hold. (i) \emph{Sequential ignorability}: once we
+condition on everything we have observed up to time $t$, the clinician's choice of dose at
+$t$ and the chance of the patient leaving the study over the next interval are statistically
+independent of what the patient's future survival would be under any given intervention.
+This is an assumption about the \emph{assignment mechanism}, not a claim that treatment has
+no effect. (ii) \emph{Positivity / overlap}: for histories that actually occur in the data,
+the observed treatment and censoring mechanisms must have nonzero probability of producing
+(or approaching, for continuous treatment) the action the intervention \(g\) would prescribe,
+while the patient remains alive and uncensored. (iii) \emph{Consistency}: if the observed
+treatment happens to match the intervention's prescription, the observed outcome equals the
+counterfactual outcome under that intervention. Below we state these formally.
+
+For each time $t=0,1,\ldots,K$, among individuals alive and uncensored at time $t$
+(i.e., $\bar Y_t=\bar C_t=0$), we assume the following. Throughout, conditioning statements
+are written in terms of $(\bar L_t,\bar A_{t-1})$; baseline covariates $X$ are fixed over
+follow-up and are implicitly conditioned on in every such statement, so that the full
+conditioning set is the observed history $H_t=(X,\bar L_t,\bar A_{t-1})$.
+
+\textbf{(1) Sequential ignorability (no unmeasured confounding and no unmeasured informative censoring).}
+Treatment and censoring behave ``as if randomized'' conditional on observed history:
+\begin{equation}
+\bigl(Y^g_{t+1},\ldots,Y^g_{K+1}\bigr)
+\ \perp\!\!\!\perp\ 
+\bigl(A_t, C_{t+1}\bigr)
+\ \Bigm|\ 
+\bar L_t=\bar l_t,\ \bar A_{t-1}=\bar a^g_{t-1},\ \bar C_t=\bar Y_t=0.
+\end{equation}
+This conditional independence concerns the assignment mechanisms for $A_t$ and
+$C_{t+1}$, not the causal effect of treatment. It rules out unmeasured factors that,
+given the observed history, jointly influence treatment decisions or censoring and the
+future counterfactual outcomes under $g$.
+
+\textbf{(2) Positivity (overlap).}
+For histories that occur with positive density under the observed data-generating
+process, there must be empirical support for the treatment levels prescribed by $g$
+\emph{and} remaining uncensored. Because $A_t$ is continuous, we express positivity in
+terms of neighborhoods. For each $k$ and each $\varepsilon>0$,
+\begin{multline}
+f_{\bar L_k,\bar A_{k-1},\bar C_k,\bar Y_k}\bigl(\bar l_k,\bar a_{k-1},0,0\bigr)>0
+\ \Rightarrow\\
+P\!\left(A_k \in \mathcal N_\varepsilon(a_k^g),\ C_{k+1}=0
+\ \Bigm|\ \bar L_k=\bar l_k,\ \bar A_{k-1}=\bar a_{k-1},\ \bar C_k=\bar Y_k=0\right)>0,
+\end{multline}
+where $\mathcal N_\varepsilon(a)=\{a':|a'-a|<\varepsilon\}$ and
+$a_k^g=g_k(\bar l_k,\bar a_{k-1})$. Intuitively, among histories that occur, the observed
+data must contain nonzero probability of treatment values near those dictated by $g$,
+while remaining alive and uncensored.
+
+\textbf{(3) Consistency (well-defined interventions).}
+If $\bar A_K=\bar a_K^g$ and $\bar C_{K+1}=0$, then $\bar L_K^g=\bar L_K$ and
+$Y_{K+1}^g=Y_{K+1}$.
+
+\subsubsection*{Plausibility of the positivity assumption}\label{sec:positivity}
+
+Our target interventions are deterministic dynamic rules (closed-loop controllers) that
+map histories to unique actions. In the extreme case where the observed treatment
+mechanism followed a deterministic rule exactly, positivity would fail because for a
+given history only one action would ever occur. In practice, ICU treatment exhibits
+substantial stochastic variation across clinicians and time, including untreated
+periods, intermittent dosing, and near--closed-loop titration. This heterogeneity
+supports approximate overlap: within the range of histories observed, there is nonzero
+probability of treatment values near those prescribed by reasonable target policies.
+
+To further limit extrapolation, we restrict simulated interventions to operate within
+empirically observed ranges of disease severity and dosing, thereby focusing estimation
+on regions of the covariate--treatment space supported by the observed data.
+
+Data generated according to the causal graph in Figure~\ref{fig:DAG2} satisfy these
+identifiability conditions, as does the data-generating model considered in CICADAS.
+
+\subsection{Identification via G-Formula for Causal Survival Analysis}
+
+Under the above assumptions, the causal survival probability under policy $g$ is
+identified by the parametric g-formula~\cite{robins1986new}. For our discrete-time survival outcome, the
+probability of surviving through time $K+1$ under policy $g$ can be written as
+\begin{align}
+\label{eq:gformula_survival1}
+P\bigl(Y^g_{K+1} = 0\bigr)
+&= \sum_{\bar{l}_K}
+\left[
+\prod_{t=0}^{K}
+P\Bigl(
+Y_{t+1} = 0
+\,\Bigm|\,
+\bar{L}_t = \bar{l}_t,\,
+\bar{A}_t = \bar{a}^g_t,\,
+\bar{C}_t = \bar{Y}_t = 0
+\Bigr)
+\right]
+f^g(\bar{l}_K),
+\end{align}
+where $f^g(\bar l_K)$ denotes the joint distribution of the covariate history $\bar L_K$
+that would arise under policy $g$ under the hypothetical elimination of censoring (i.e.,
+$\bar C=0$). Survival through time $K+1$ corresponds to the product over $t=0,\ldots,K$,
+while the covariate history $\bar L_K$ is generated through transitions at
+$t=0,\ldots,K-1$.
+
+Although the estimand in \eqref{eq:gformula_survival1} is defined under elimination of
+censoring, the observed data are subject to censoring. Assumption (1) is stated jointly
+for treatment and censoring and therefore requires conditional independent censoring
+given observed history; accordingly, we estimate the disease-evolution and outcome
+models using only person-time during which individuals are alive and uncensored, without
+fitting an explicit censoring model.
+
+\paragraph{Simulating the covariate distribution under $g$.}
+We do not estimate $f^g(\bar l_K)$ directly. Instead, we generate sample paths from it
+by recursively simulating $L_{t+1}$ from the disease-evolution model
+\[
+f\bigl(L_{t+1}\mid \bar L_t,\bar A_t,\bar C_t=\bar Y_t=0\bigr)
+\quad \text{with} \quad A_t = g_t(\bar L_t,\bar A_{t-1}),
+\]
+which yields trajectories distributed as $f^g(\bar L_K)$.
+Under sequential ignorability and consistency, the conditional transition densities
+under $g$ coincide with those estimable from observed data, giving the factorization
+\[
+f^g(\bar l_K)
+=
+\prod_{t=0}^{K-1}
+f\!\left(
+l_{t+1}
+\,\middle|\,
+\bar l_t,\,
+\bar a_t^g,\,
+\bar C_t=\bar Y_t=0
+\right).
+\]
+A more detailed derivation is provided in Supplementary Section~S1.
+
+\paragraph{Monte Carlo implementation.}
+The summation in \eqref{eq:gformula_survival1} is generally intractable because it
+requires integrating over all possible covariate trajectories. We therefore approximate
+it by Monte Carlo simulation: generate $M$ sample paths
+$\bar l_K^{(m)}=(l_0^{(m)},\ldots,l_K^{(m)})$ from the disease-evolution model under
+policy $g$ (and $\bar C=0$), and compute
+\begin{align}
+P\bigl(Y^g_{K+1}=0\bigr)
+&\approx
+\frac{1}{M}\sum_{m=1}^{M}
+\prod_{t=0}^{K}
+P\Bigl(
+Y_{t+1}=0
+\,\Bigm|\,
+\bar L_t=\bar l_t^{(m)},\,
+\bar A_t=\bar a_t^g,\,
+\bar C_t=\bar Y_t=0
+\Bigr),
+\end{align}
+where $\bar l_t^{(m)}=(l_0^{(m)},\ldots,l_t^{(m)})$ is the covariate history along the
+$m$-th simulated trajectory.
+
+\paragraph{Models required for implementation.}
+Implementing the Monte Carlo g-formula requires estimating two statistical models from
+the observed (uncensored) data:
+\begin{enumerate}
+\item \textbf{Disease evolution model:}
+\[
+f\!\left(L_{t+1}\mid \bar L_t,\bar A_t,\bar C_t=\bar Y_t=0\right).
+\]
+\item \textbf{Outcome (mortality) model:}
+\[
+P\!\left(Y_{t+1}=1\mid \bar L_t,\bar A_t,\bar C_t=\bar Y_t=0\right).
+\]
+\end{enumerate}
+
+\paragraph{Relation to alternative g-formula estimators.}
+A comparison of the Monte Carlo parametric g-formula used here with iterated-conditional-expectation
+and weighting-based alternatives is given in Supplementary Section~S1.3.

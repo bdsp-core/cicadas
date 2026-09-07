@@ -1,0 +1,59 @@
+\begin{tcolorbox}[title=Theorem 1: General g-formula for a time-varying treatment with elimination of censoring, breakable, enhanced jigsaw]
+    \label{thm:timevarying_gformula}
+    Consider a deterministic (static or dynamic) intervention $g$ that sets $\bar{A}_k = \bar{a}_k^g$ for all $k = 0,\ldots,K$. 
+    Assume that for all individuals the identifying assumptions hold (exchangeability, positivity, consistency).
+    Then the counterfactual risk under \(\bar{a}^g\) and elimination of censoring is given by
+  
+    \begin{align*}
+      \Pr\bigl(Y_{K+1}^{g} = 1\bigr)
+      &=\;
+      \sum_{\bar{x}_K} \sum_{k=0}^K 
+          \Pr\Bigl(Y_{k+1} = 1 \,\Big|\,\bar{X}_k = \bar{x}_k,\;\bar{A}_k=\bar{a}^g_k,\; \bar{Y}_k=0,\;\bar{V}_{k+1}=0 \Bigr) \\[6pt]
+      &\quad\quad \times\;
+      \prod_{j=0}^{k} \Pr\Bigl(Y_j=0 \,\Big|\, \bar{X}_{j-1} = \bar{x}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\;\bar{Y}_{j-1} = \bar{V}_j = 0 \Bigr) \\[6pt]
+      &\quad\quad\quad \times\;
+        f\Bigl(x_j \,\Big|\,\bar{x}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j} =\bar{V}_j = 0 \Bigr)
+    \end{align*}
+        
+        
+    \begin{align*}
+      \Pr\bigl(Y_{K+1}^{g} = 0\bigr)
+      &=\;
+      \sum_{\bar{x}_K} \Pr\Bigl(Y_{K+1} = 0 \,\Big|\,\bar{X}_K = \bar{x}_K,\;\bar{A}_K=\bar{a}^g_k,\; \bar{Y}_K=0,\;\bar{V}_{K+1}=0 \Bigr) \\[6pt]
+      &\quad \times
+      \prod_{j=0}^{K} \Pr\Bigl(Y_j=0 \,\Big|\, \bar{X}_{j-1} = \bar{x}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j-1} = 0,\;\bar{V}_j = 0 \Bigr) \\[6pt]
+      &\quad\quad \times\;
+        f\Bigl(x_j \,\Big|\,\bar{x}_{j-1},\;\bar{A}_{j-1} = \bar{a}^g_{j-1},\; \bar{Y}_{j} = 0,\;\bar{V}_j = 0 \Bigr)
+    \end{align*}
+        
+        
+
+    \end{tcolorbox}
+
+\paragraph{Proof.}
+Let $\bar{A}_{t-1} = \bar{a}^g_{t-1}$, $t \leq k$. 
+If $f(\bar{L}_t,\bar{A}_{t-1},V_t = 0,Y_t = 0) \neq 0$ 
+then define 
+$b^g(k,t) = \Pr[Y^g_{k+1} = 0|\bar{L}_t,\bar{A}_{t-1},V_t = Y_t = 0]$. 
+Note that 
+$b^g(k,-1) = \Pr[Y^g_{k+1} = 0]$ 
+as $\bar{X}_{-1} = \bar{A}_{-2} = \bar{V}_{-1} = \bar{Y}_{-1} = 0$ by definition. Then:
+\begin{flalign*}
+    b^g(k,t) &\stackrel{a}{=} \Pr[Y^g_{t+1} = \cdots = Y^g_{k+1} = 0|\bar{X}_t,\bar{A}_{t-1},Y_t = V_t = 0] \\
+    &\stackrel{b}{=} \Pr[Y^g_{t+1} = \cdots = Y^g_{k+1} = 0|\bar{X}_t,\hlm{\bar{A}_{t}},Y_t = \hlm{V_{t+1}}= 0] \\
+    &\stackrel{c}{=} \Pr[\hlm{Y^g_{t+1} = 0}|\bar{X}_t,\bar{A}_{t},Y_t = V_{t+1} = 0] \times \Pr[Y^g_{t+2} = \cdots = Y^g_{k+1} = 0|\bar{X}_t,\bar{A}_{t}, \hlm{Y_{t+1}} =V_{t+1} =  0]  \\
+    &\stackrel{d}{=} \Pr[\hlm{Y_{t+1} = 0}|\bar{X}_t,\bar{A}_{t},Y_t = V_{t+1} = 0] \times \Pr[Y^g_{t+2} = \cdots = Y^g_{k+1} = 0|\bar{X}_t,\bar{A}_{t}, Y_{t+1} =V_{t+1} =  0]  \\
+    &\stackrel{e}{=} \hlm{\sum_{x_{t+1}}}\Pr[Y_{t+1} = 0|\bar{X}_t,\bar{A}_{t},Y_t = V_{t+1} = 0] \times \Pr[\hlm{X_{t+1}}, Y^g_{t+2} = \cdots = Y^g_{k+1} = 0|\bar{X}_t,\bar{A}_{t}, Y_{t+1} =V_{t+1} =  0]  \\
+    &\stackrel{f}{=} \sum_{x_{t+1}} \Pr[Y_{t+1} = 0|\bar{X}_t,\bar{A}_{t},Y_t = V_{t+1} = 0] \\
+    & \quad\quad  \times \Pr[Y^g_{t+2} = \cdots = Y^g_{k+1} = 0|\hlm{\bar{X}_{t+1}},\bar{A}_{t}, Y_{t+1} =V_{t+1} =  0]  \\
+    &\quad\quad \times f(\hlm{x_{t+1}}|\bar{x}_t, \bar{a}^g_t,V_{t+1} = Y_{t+1} = 0) \\
+    &\stackrel{g}{=} \sum_{x_{t+1}}
+    \Pr[Y_{t+1} = 0|\bar{X}_t,\bar{A}_{t},Y_t = V_{t+1} = 0]\\
+    & \quad\quad  \times \Pr[Y^g_{t+2} = \cdots = Y^g_{k+1} = 0|\bar{X}_{t+1},\hlm{\bar{A}_{t+1}}, Y_{t+1} =\hlm{V_{t+2}} =  0]  \\
+    &\quad\quad \times f(x_{t+1}|\bar{a}^g_t,\bar{x}_t,V_{t+1} = Y_{t+1} = 0) \\
+    &\stackrel{h}{=} \sum_{x_{t+1}}\hdots \sum_{x_{k}}
+    \Pr[ Y^g_{k+1} = 0|\bar{X}_{k},\bar{A}_{k}, Y_{k} =V_{k+1} =  0] \\
+    & \quad\quad \times \prod_{j=t+1}^k \Pr[Y_{t+1} = 0|\bar{X}_t,\bar{A}_{t},Y_t = V_{t+1} = 0]  \\
+    &\quad\quad\quad\quad\quad \times f(x_{t+1}|\bar{a}^g_t,\bar{x}_t,V_{t+1} = Y_{t+1} = 0), \\
+\end{flalign*}
+where (a) is because $Y^g_{k+1}=0$ implies $Y^g_{t+1} = \cdots = Y^g_{k} = 0$, (b) is by positivity and exchangeability, (c) is by rules of probability, and consistency, (d) is by the law of total probability, (e) is by the rules of probability, and (f) follows by iterating the preceding steps. Plugging $t=-1$ into $b^g(k,t)$ gives the desired expression for $\Pr[Y^{g}_{K+1}=0]$. For the other expression, we note that $\Pr[Y^g_{K+1}=1] = \sum_{k=0}^K \Pr[Y^g_{k+1}=1]\Pr[\bar{Y}^g_{k}=0]$, and then follow steps similar to those above. \(\blacksquare\) 

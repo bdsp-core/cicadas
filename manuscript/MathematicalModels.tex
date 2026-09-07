@@ -1,0 +1,180 @@
+\section{The CICADAS Simulation Model}
+\label{sec:datagen}
+Sections~4 and~5 together specify and estimate the two model components required by the parametric g-formula introduced in Section~3.3: (i) the disease-evolution model for
+$L_{t+1} \mid \bar{L}_t, \bar{A}_t$, and (ii) the discrete-time hazard model for
+$Y_{t+1} \mid \bar{L}_t, \bar{A}_t$.
+We present these components in a mechanistic and sequential manner that mirrors ICU physiology and clinical decision-making, and that ensures parameter identifiability before counterfactual trial emulation.
+
+\paragraph{Roadmap.} The full simulated data-generating mechanism has five interlocking
+pieces, each tied to a concrete clinical question:
+(i) the \emph{disease-dynamics model} (Sec.~4.1) describes how
+epileptiform-activity burden $L_{0,t}$ would evolve in the absence of treatment, capturing
+the early rise, peak, and gradual resolution seen clinically;
+(ii) the \emph{pharmacokinetic--pharmacodynamic (PKPD) model} (Sec.~4.2) tracks drug
+concentration in a one-compartment approximation and maps it to the multiplicative
+suppression of disease burden, with patient-specific potency and steepness modulated by age
+and SOFA;
+(iii) the \emph{outcome (mortality) hazard model} (Sec.~4.3) gives the discrete-time
+probability of death as a function of cumulative disease and treatment burden;
+(iv) the \emph{censoring model} (Sec.~4.4) generates informative loss-to-follow-up that
+depends on treatment status; and
+(v) the \emph{treatment-assignment model} (Sec.~4.5) generates two parallel cohorts---an
+idealized RCT and a realistically confounded observational dataset.
+Only components (i) and (iii) are strictly required as inputs for the g-formula in applied
+settings; (ii), (iv), and (v) are used here to construct a realistic simulation with known
+ground truth.
+
+In this present section, we present our realistic synthetic data generation procedure. To simulate this system, we specify parametric models for disease progression, treatment effect, and patient outcome. Time is discretized into 2-hour intervals over a 7-day (168-hour) horizon.
+
+\subsection{Disease Dynamics Model}
+\label{sec:disease_dynamics}
+
+In our system, the underlying disease intensity in the absence of treatment, $L_{0,t}$, is modeled as a stochastic process that captures three clinically motivated features of ICU epileptiform activity: (i) an early phase of rapid escalation, (ii) saturation at a characteristic peak intensity, and (iii) a later phase of gradual spontaneous resolution with decreasing variability. The evolution of $L_{0,t}$ is given by
+\begin{equation}
+\label{eq:disease_evolution}
+L_{0,t+\Delta t}
+=
+\Big(
+L_{0,t}
++ \mu(L_{0,t}, t)\,\Delta t
++ \sigma(L_{0,t}, t)\,\sqrt{\Delta t}\,Z
+\Big)_+,
+\end{equation}
+where $Z \sim \mathcal{N}(0,1)$, $(x)_+ = \max(x,0)$ enforces nonnegativity of disease burden, $\mu(\cdot)$ is the deterministic drift term, and $\sigma(\cdot)$ controls stochastic variability.
+
+The drift term $\mu(L_{0,t}, t)$ is defined in terms of a characteristic disease intensity scale $H$, which represents the typical peak (or carrying-capacity–like) level of epileptiform activity observed in critically ill patients:
+\begin{equation}
+\label{eq:disease_drift}
+\mu(L_{0,t}, t)
+=
+\begin{cases}
+h\,L_{0,t}\!\left(1 - \dfrac{L_{0,t}}{H}\right)
+\;-\;
+\alpha \max(0, L_{0,t} - H),
+& t < 30, \\[8pt]
+-\alpha\!\left(L_{0,t} - 0.2\,H e^{-\delta (t-30)}\right)
+\;-\;
+\alpha \max(0, L_{0,t} - H),
+& t \ge 30 .
+\end{cases}
+\end{equation}
+
+For early times ($t<30$ hours), the first term implements logistic-like growth: disease intensity initially increases approximately exponentially when $L_{0,t} \ll H$, but the growth rate diminishes as $L_{0,t}$ approaches $H$, preventing unbounded escalation. The additional penalty term $-\alpha \max(0, L_{0,t}-H)$ introduces stronger downward pressure when disease intensity exceeds the characteristic peak, producing a soft upper bound rather than a hard cutoff.
+
+For later times ($t \ge 30$ hours), the drift switches to a mean-reverting form that models spontaneous recovery. In this phase, disease intensity is pulled toward a decaying baseline $0.2\,H e^{-\delta (t-30)}$, representing gradual resolution of the underlying pathological process. The same overshoot penalty is retained to discourage unrealistically persistent disease levels above $H$. Together, these components produce trajectories that rise, peak, and then resolve over clinically plausible time scales.
+
+Stochastic variability is governed by the diffusion term
+\begin{equation}
+\label{eq:disease_diffusion}
+\sigma(L_{0,t}, t)
+=
+\big[ \sigma_{\mathrm{early}} e^{-t/\tau}
++ \sigma_{\mathrm{late}} \big]
+\sqrt{\max(0.001, L_{0,t})}.
+\end{equation}
+which allows higher volatility early in the course of illness and progressively stabilizes over time. The square-root dependence on $L_{0,t}$ ensures that variability scales with disease burden while remaining well-defined near zero.
+
+Together, Equations~\eqref{eq:disease_evolution}--\eqref{eq:disease_diffusion}
+generate disease trajectories that rise, peak, and resolve over clinically
+plausible time scales, providing the natural-history component of the
+CICADAS data-generating process. This behavior is consistent with empirically observed patterns of epileptiform activity in critically ill patients and provides a realistic substrate for evaluating time-varying treatment and outcome models within the CICADAS framework. Examples of disease natural-history trajectories generated by this model are shown in Figures~\ref{fig:control-problem} and~\ref{fig:swimmer_survival_rct}.
+
+\subsection{Pharmacokinetic-Pharmacodynamic (PKPD) Model}
+\label{sec:pkpd_model}
+We leverage standard PKPD models to model the treatment effect~\cite{sheiner1979simultaneous,gabrielsson2016pharmacokinetic,hughes1992context}. We approximate the drug concentration in the body $x_t$ over time under treatment using a one-compartment pharmacokinetic model:
+\begin{equation}
+x_t = k_e x_{t-1} + A_t
+\end{equation}
+where $k_e$ is an elimination constant and $A_t$ is the drug dose administered. The pharmacodynamic effect $s_{x_t}$ is a reverse sigmoid function of the concentration $x_t$:
+\begin{equation}
+s_{x_t} = 1 - \frac{1}{(C_{50}/x_t)^\gamma + 1},
+\end{equation}
+such that $s_{x_t}$ decreases from 1 to 0 as drug concentration $x_t$ increases. The patient-specific parameters $C_{50}$ (concentration for 50\% effect) and $\gamma$ (Hill coefficient) depend on baseline covariates, allowing for heterogeneous treatment responses (see below). The observed disease intensity is the product of the underlying disease and the drug effect:
+\begin{equation}
+L_t = L_{0,t} \cdot s_{x_t}
+\end{equation}
+
+\paragraph{Population heterogeneity (mixed effects).}
+We model patient-specific pharmacodynamics, the $C_{50}$ and Hill coefficient heterogeneity with baseline covariates via mixed effects. For illustration, consider just two baseline covariates, age and Sequential Organ Failure Assessment (SOFA) score:
+\begin{align}
+C_{50,i} &= \beta^C_0 + \beta^C_1 \cdot \mathrm{age}_i^* + \beta^C_2 \cdot \mathrm{SOFA}_i^* + \eta^C_i, \\
+\gamma_i &= \beta^\gamma_0 + \beta^\gamma_1 \cdot \mathrm{age}_i^* + \beta^\gamma_2 \cdot \mathrm{SOFA}_i^* + \eta^\gamma_i,
+\end{align}
+where $z^* = (z - \bar z)/\sigma_z$ denotes standardization, and $\eta^C_i \sim \mathcal{N}(0,\sigma_C^2)$, $\eta^\gamma_i \sim \mathcal{N}(0,\sigma_\gamma^2)$ are patient-level random effects.
+
+\subsection{Outcome Model}
+\label{sec:outcome-model}
+\label{subsec:death_model}
+We model mortality using a discrete-time hazard function $h_{i,t}$, defined as the probability of death for patient $i$ during interval $(t,t+1]$, conditional on being alive and uncensored up to time $t$:
+\[
+h_{i,t}
+= P\!\left(
+Y_{i,t+1} = 1
+\;\middle|\;
+\bar{Y}_{i,t} = 0,\;
+\bar{C}_{i,t} = 0,\;
+\bar{L}_{i,t},\;
+\bar{A}_{i,t}
+\right).
+\]
+The logit of the hazard depends on baseline time effects and cumulative harm from both disease and treatment, with susceptibility modified by patient characteristics:
+\begin{equation}
+\text{logit}\,h_{i,t} 
+= \alpha_0 
++ \alpha_1 \left( \frac{t}{T_{\max}} \right)^2
++ (\alpha_2 + \alpha_3 \cdot \mathrm{SOFA}_i) \left( \frac{\sum_{s=0}^t L_{i,s}}{L_{\mathrm{norm}}} \right)^2
++ (\alpha_4 + \alpha_5 \cdot \tfrac{\mathrm{Age}_i}{\mathrm{Age}_{\mathrm{norm}}}) \left( \frac{\sum_{s=0}^t A_{i,s}}{A_{\mathrm{norm}}} \right).
+\label{eq:death_model}
+\end{equation}
+Here:
+\begin{itemize}
+    \item \(T_{\max}\) scales time (e.g., 170 h) to stabilize estimation.
+    \item \(L_{\mathrm{norm}}\) (e.g., 24 units) normalizes cumulative disease burden.
+    \item \(A_{\mathrm{norm}}\) (e.g., 207 units) normalizes cumulative treatment exposure.
+    \item \(\mathrm{SOFA}_i\) and \(\mathrm{Age}_i\) are baseline patient covariates (included in the vector of baseline covariates \(L_{i,0}\) in the g-formula framework).
+\end{itemize}
+This structure captures: (i) a smooth baseline time effect, (ii) accumulation of disease-related harm, 
+(iii) accumulation of treatment-related harm, and (iv) effect modification by baseline patient characteristics 
+(critical illness severity, measured by SOFA score, and age). 
+Although this functional form omits potential \textit{direct} effects of SOFA or age on mortality beyond their interaction 
+with cumulative burden, it is intended only as a stylized data-generating process for simulation rather than as 
+a clinically validated model. In practice, more flexible outcome models could include independent main effects of 
+SOFA or age without altering the causal inference framework.
+
+\subsection{Censoring Model}
+\label{subsec:censoring_model}
+Loss to follow-up in the simulated observational cohort is generated by a discrete-time hazard that
+depends on treatment status, accumulated treatment burden, accumulated disease burden, and elapsed
+time. Censoring is therefore \emph{informative}: it depends on the same quantities that drive
+mortality, so ignoring it biases naive analyses. No censoring is applied in the randomized cohort,
+which is what allows that cohort to serve as an unmodeled ground truth.
+
+equation
+
+The censoring model is used only to construct a realistic observational cohort; it is not required
+as an input to the g-formula in applied settings, where the censoring mechanism must instead be
+estimated from the data. Section~\ref{sec:robustness} reports how the estimator behaves when the
+censoring mechanism departs from the one assumed. Full parameterization is given in Supplementary
+Section~S2.2.
+
+\subsection{Treatment Assignment Model}
+\label{sec:TreatmentAssignment}
+Two cohorts are generated from identical disease and PK/PD models, differing only in how treatment is
+assigned. In the \emph{randomized} cohort, each patient is assigned to closed-loop control or to no
+treatment with probability one-half, independently of all patient characteristics. In the
+\emph{observational} cohort, the probability of treatment is an increasing function of early disease
+burden, SOFA score, and the trajectory's early slope and acceleration, so that sicker and
+faster-deteriorating patients are preferentially treated.
+
+equation
+
+This is the mechanism that generates confounding by indication: because treatment probability depends
+on early severity, and early severity predicts death, the treated group is sicker at baseline and
+treatment appears less beneficial than it is. Section~\ref{sec:cohorts} quantifies the resulting bias
+over 400 replications. Full parameterization is given in Supplementary Section~S2.3.
+
+\subsection{Model Parameters}
+The full set of model variables, their symbols, units, and the ground-truth values used to generate
+the synthetic cohorts is given in Supplementary Table~S1. Section~\ref{sec:estimation} describes how
+each component is estimated from data; Section~\ref{sec:results} reports how accurately the
+generating values are recovered.

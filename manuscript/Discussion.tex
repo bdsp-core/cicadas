@@ -1,0 +1,263 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What This Study Shows, and What It Does Not}
+
+CICADAS is an end-to-end modeling, estimation, and simulation framework for emulating randomized
+trials of dynamic treatment policies from longitudinal observational data. In this paper we
+specified the framework, implemented it in MATLAB and Python, and evaluated it entirely by internal,
+simulation-based validation.
+
+Within that evaluation, three things were shown. First, in synthetic ICU cohorts with confounding by
+indication severe enough to eliminate---and in a substantial fraction of replications reverse---the
+apparent treatment benefit, the parametric g-formula recovers the ground-truth policy contrast
+closely, while naive Kaplan--Meier, stabilized IPTW, and a baseline-weighted marginal structural
+model do not. Second, the sequential estimation procedure---natural history from untreated patients,
+PK/PD parameters from dose-switching patients, mortality from the full cohort---recovers the
+generating parameters accurately, and the corrected two-stage estimator approaches oracle
+performance. Third, the estimator's behavior degrades in characterizable ways under injected
+unmeasured confounding, EEG measurement error, and misspecified censoring.
+
+None of this constitutes evidence about anti-seizure treatment in patients. Every number reported
+here is a property of a data-generating process that we specified, recovered by an estimator that we
+also specified; the two share structural assumptions, as Section~\ref{sec:misspec} discusses. The
+appropriate reading is that the framework is \emph{methodologically feasible}---the estimation
+problem is solvable, the computations are tractable at realistic cohort sizes, and the failure modes
+are identifiable---and that its clinical utility is entirely undetermined.
+
+\subsection{Methodological Contributions}
+
+CICADAS addresses three challenges in ICU causal inference through integrated solutions: mechanistic
+modeling captures underlying disease biology and drug effects, sequential parameter estimation
+leverages natural treatment variation in clinical practice, and the parametric g-formula simulates
+counterfactual outcomes under alternative policies. The corrected two-stage estimation approach
+achieves near-oracle accuracy for key PK/PD parameters, while the g-formula removes the substantial
+bias present in standard survival analyses of the same simulated data.
+
+Causal effect recovery depends on accurate PK/PD parameter estimation, since these parameters
+determine the mapping from treatment decisions to disease suppression and downstream mortality. In
+these simulations, sufficient dosing variation was necessary for stable identification, whereas data
+from constant closed-loop control provided insufficient dynamic range for reliable
+estimation---motivating our use of dose-switching patients for parameter estimation. This is a
+design insight that transfers directly to any real-data application of this class of method.
+
+\subsection{Model Misspecification and the Shared-Structure Problem}
+\label{sec:misspec}
+
+The most important limitation of a simulation study of this design is that the data-generating
+process and the estimation models are not independent. Both use a one-compartment pharmacokinetic
+approximation; both represent pharmacodynamic effect as multiplicative suppression of disease burden
+through a Hill function; both express mortality as a discrete-time hazard depending on cumulative
+disease and cumulative drug burden through the same functional form; and both draw natural history
+from the same parametric family. When the estimator is handed data generated under exactly the
+structure it assumes, recovering the truth demonstrates that the estimator is consistent and that
+the numerical implementation is correct. It does not demonstrate that the estimator is robust,
+because nothing was misspecified.
+
+We therefore regard the recovery results as characterizing an \emph{upper bound} on achievable
+performance rather than an expected performance in practice. The sensitivity analyses in
+Section~\ref{sec:robustness} relax this in three specific directions---an unmeasured confounder
+entering both treatment assignment and mortality, additive measurement error on the EEG severity
+proxy, and alternative censoring mechanisms---and the framework's behavior under each is
+informative. But three named departures are not robustness to misspecification in general. In
+particular, we did not test: the wrong number of PK compartments; non-monotone or saturating
+dose--response departing from the Hill form; time-varying PK/PD parameters (which occur clinically
+with changing renal and hepatic function, and with autoinduction); drug--drug interaction in
+patients receiving multiple agents; or a mortality hazard depending on the \emph{pattern} of
+exposure rather than its cumulative total. Any of these is plausible in real ICU data, and each
+would bias the estimator in a direction that our current experiments cannot predict.
+
+A distinct concern is transportability. Even a correctly specified model, fit in one cohort,
+estimates a quantity specific to that cohort's case mix, drug formulary, monitoring intensity, and
+---critically in critical care---its local practice around withdrawal of life-sustaining therapy.
+Between-center variation in these is substantial, and it enters the estimand rather than merely the
+variance. Estimates from a single center should not be assumed to transport, and a multicenter
+analysis should report between-center heterogeneity rather than pooling over it.
+
+\subsection{Conditions Required to Apply CICADAS to Real Data}
+\label{sec:conditions}
+
+The framework is not applicable to an arbitrary longitudinal ICU dataset. Six conditions must hold,
+and each is checkable before any causal estimate is produced. We state them explicitly because a
+framework whose preconditions are left implicit invites misapplication.
+
+\begin{enumerate}\setlength{\itemsep}{3pt}
+\item \textbf{Treatment overlap over the policy range of interest.} Every policy compared must have
+support: for each patient stratum and each time point, the observed data must contain patients
+receiving treatment intensities consistent with the policy being evaluated. In practice this means
+examining the empirical distribution of dose conditional on severity and confirming it is
+non-degenerate over the range of $\theta$ being swept. Where it is not, the corresponding portion of
+the policy curve is extrapolation from the parametric model and should be reported as such rather
+than plotted alongside supported regions (see Section~\ref{sec:structural-limits}).
+
+\item \textbf{Measured confounding sufficient for sequential exchangeability.} The covariates
+recorded must capture what actually drives dose escalation---not only severity and vital signs, but
+sedation goals, neurologic examination findings, and goals-of-care status. The last of these is
+routinely absent from structured data and is plausibly a strong confounder, since a decision to
+limit escalation and a high mortality risk share a common cause. Negative-control
+outcomes~\cite{lipsitch2010negative} and multiple propensity specifications should accompany any
+real-data estimate.
+
+\item \textbf{Dosing variation adequate to identify PK/PD parameters.} Section~\ref{sec:pkpd-results}
+shows that patients under stable closed-loop control carry little information about drug effect:
+identification requires within-patient variation in exposure. A cohort in which dosing is uniformly
+protocolized is, for this purpose, uninformative---the framework requires the very practice
+variation that motivates it. We recommend reporting the proportion of person-time spent with
+$x_t/C_{50}$ in a range that supports identification, as a design diagnostic prior to estimation.
+
+\item \textbf{A severity readout of adequate fidelity.} Our measurement-error experiments indicate
+that the two-stage PK/PD estimator fails to converge on a substantial fraction of cohorts once noise
+on the severity signal exceeds $\sigma \approx 0.05$. This is a concrete, quantitative precondition
+on the EEG quantification pipeline, and it should be verified against that pipeline's known error
+characteristics before analysis. Section~\ref{sec:eeg-readout} addresses the harder question of
+whether a scalar readout is the right object at all.
+
+\item \textbf{A characterized censoring mechanism.} Our censoring experiments show bias growing to
+approximately $+17$ percentage points under strongly outcome-dependent censoring. In ICU data, loss
+to follow-up is generated by transfer, monitoring discontinuation, and withdrawal of care---the last
+of which is not plausibly independent of prognosis. The mechanism must be characterized and modeled,
+not assumed.
+
+\item \textbf{Subgroups represented in sufficient number.} Policy comparisons within a stratum
+require that the stratum contain enough patients, with enough treatment variation, to fit the
+component models. Strata failing this should be reported as indeterminate rather than as showing no
+effect.
+\end{enumerate}
+
+\subsection{What the Framework Structurally Cannot Do}
+\label{sec:structural-limits}
+
+Two limits are structural rather than statistical, and no amount of data or computation removes
+them.
+
+The first bounds the credible policy space. CICADAS produces empirically defensible estimates only
+for policies with support in the observed data; policies outside that range are extrapolations from
+the fitted parametric models, and their apparent precision is an artifact of the parametric form
+rather than evidence. This has a direct consequence for the threshold optimization presented in
+Section~\ref{sec:policy-space}. Sweeping $\theta$ toward zero corresponds to a degree of suppression
+that may simply not occur in routine practice, and in real data the corresponding portion of the
+curve would be model-based conjecture. The honest output of a real-data application is therefore two
+maps rather than one: a map of estimated treatment-effect heterogeneity, and a map of where the data
+can speak at all. Regions where the observational data are structurally silent should be flagged for
+prospective study, never presented as null findings.
+
+The second limit is more fundamental and deserves to be stated plainly. Because the framework learns
+the effects of treatment from variation in treatment that has already occurred, it can only ever
+interrogate the space of therapies, mechanisms, and timing strategies embodied in current practice.
+It can find the best policy within that space; it cannot find a policy outside it. A genuinely novel
+agent, a mechanism no current drug targets, or a timing strategy nobody has attempted---the
+disruptive interventions that produce real advances in clinical care---are invisible to it by
+construction. This is not a deficiency to be engineered away; it is the definitional boundary
+between learning from observation and learning from experiment. Randomized trials remain the only
+instrument capable of evaluating interventions that have never been tried, and the appropriate
+relationship between CICADAS and trials is therefore complementary: the framework is a tool for
+allocating trial resources efficiently within known therapeutic space, not a substitute for the
+trials that extend it.
+
+\subsection{The EEG-Derived Treatment Target}
+\label{sec:eeg-readout}
+
+The framework assumes the availability of a scalar severity readout $L_t$ that can be tracked
+continuously and titrated against a threshold. This assumption is doing more work than it appears
+to, and we regard it as the most substantial obstacle to real-world deployment.
+
+Clinically distinct electrographic states are not interchangeable instances of a single quantity.
+Several brief focal seizures and one prolonged ictal episode may integrate to the same burden while
+carrying different prognostic implications; focal and generalized activity differ in mechanism and
+in likely response to systemic suppression; and identical ictal burden on a continuous, reactive
+background versus a burst-suppressed or attenuated background reflects different underlying brain
+states and, plausibly, different treatment benefit. There is also an irreducible measurement problem
+beneath the modeling one. Expert electroencephalographers identifying seizures and rhythmic and
+periodic patterns---precisely the categories a severity readout would have to be built
+from---agree only moderately with one another~\cite{jing2023interrater}. A scalar target inherits
+that irreducible label noise before any modeling assumption is made. Collapsing all of this to one
+number then imposes a further substantive and currently unvalidated assumption: that harm is a
+monotone function of a scalar summary, and that the summary is sufficient for the treatment
+decision.
+
+There is a practical problem alongside the conceptual one. Retrospective ICU datasets frequently
+lack granular quantitative EEG; the recorded product is often a narrative report at daily resolution
+rather than a time series at the resolution titration requires. Where raw EEG is available, deriving
+a continuous target requires an automated quantification pipeline whose error characteristics are
+known and whose output has been validated against outcomes---and, per
+Section~\ref{sec:conditions}, whose noise falls below the threshold at which our estimation
+procedure destabilizes.
+
+The consequence is that optimizing $\theta$ is mathematically well posed inside the simulation while
+being potentially uninterpretable outside it. A real deployment must therefore either commit to a
+specific, prospectively validated scalar readout and defend that choice on its own evidence, or
+generalize the framework so that severity is a vector or a pattern type rather than a scalar. The
+latter is a substantial extension: it changes the controller, the identification argument, and the
+policy space simultaneously. We regard resolving this as a prerequisite for, rather than a
+refinement of, clinical application.
+
+\subsection{Clinical Heterogeneity and the Mismatch with the Simulation}
+
+The present simulation treats all critically ill patients with electrographic seizures as a single
+population. In reality, causes of ICU seizures and the underlying pathophysiology are heterogeneous,
+and the likelihood that anti-seizure treatment changes outcomes plausibly differs across etiologies.
+Clinically important categories include: (i) post-anoxic encephalopathy, where widespread ischemic
+injury from cardiac arrest may render treatment ineffective regardless of seizure
+burden~\cite{rossetti2005refractory,ruijter2022treating}; (ii) primary structural injury
+(large-artery ischemic stroke, intracerebral hemorrhage, traumatic brain injury, brain tumor), where
+seizures arise from focal cortical damage and the benefit of aggressive suppression may depend on
+lesion type and location~\cite{claassen2004detection,vespa2005continuous}; (iii) systemic,
+metabolic, and septic encephalopathy, where seizures are often transient and reverse with treatment
+of the underlying condition, so that aggressive anti-seizure therapy may add toxicity without
+benefit~\cite{sutter2016status}; and (iv) primary epileptic populations with non-convulsive status
+epilepticus, where conventional anti-seizure protocols are more likely to be
+effective~\cite{trinka2015definition,husain2018randomized}. The causal structure---which covariates
+confound, which mediate, and which modify treatment effects---likely differs across these groups.
+
+We note explicitly that these etiologic distinctions are \textbf{not represented in the present
+simulation}. The heterogeneity in our data-generating process is parametric---patients differ in
+susceptibility to cumulative disease harm and to cumulative drug harm---rather than mechanistic.
+Parametric heterogeneity of this kind is sufficient to exercise the machinery of stratified policy
+estimation, but it is not the same thing as the clinical heterogeneity we invoke to motivate the
+framework's relevance, and it should not be read as evidence that the framework handles that
+heterogeneity. A simulation that did so would need distinct disease-dynamics and benefit--harm
+structures per etiology, including etiologies in which treatment is futile at any dose, and would
+need to test whether the estimator recovers effects separately within strata of markedly unequal
+size. We regard building that simulation as a necessary step before real-data deployment, and it is
+not attempted here.
+
+Similarly, on the harm side of the trade-off, the present simulation represents treatment harm only
+as a concentration-dependent contribution to the mortality hazard. A complete representation in a
+real clinical deployment would separate concrete harms that clinicians weigh in practice:
+sedation-related hypotension and the need for vasopressor support, prolonged mechanical ventilation
+and the associated risk of ventilator-associated pneumonia, delayed weaning and ICU length of stay,
+delayed neuroprognostication in post-arrest patients, and drug-specific toxicities (e.g., propofol
+infusion syndrome~\cite{kam2007propofol}, thrombocytopenia with valproate, hepatic failure with other
+agents~\cite{perucca2012adverse}). The framework's outcome model can be extended to treat each of
+these as a distinct competing or intermediate outcome, and we regard this as a priority in the
+real-data application.
+
+\subsection{Limitations}
+
+Beyond the structural issues above, our simulations assume simplified patient heterogeneity and
+one-compartment pharmacokinetics, whereas real applications may require additional covariates and
+more complex models. The identification argument assumes no unmeasured confounding of the
+treatment--outcome relationship at each time point; Section~\ref{sec:robustness} quantifies the
+bias induced by violations of a specific parametric form, but cannot establish that the assumption
+holds in any real dataset. Finally, our benchmarking comparisons are subject to the caveat stated in
+Section~\ref{sec:benchmark}: our g-formula implementation is correctly specified with respect to the
+generating process while its competitors are off-the-shelf specifications, so the ordering we
+observe should not be read as a general ranking of methods.
+
+\subsection{External Validation}
+\label{sec:external-validation}
+
+The necessary next step is external validation in real ICU EEG data, and we describe it here
+strictly as future work that does not support any claim in the present manuscript. We are assembling
+a multicenter cohort of ICU patients undergoing continuous EEG monitoring for this purpose. That
+analysis will be the first test of whether the preconditions in Section~\ref{sec:conditions} are
+satisfiable in practice---whether overlap is adequate, whether the measured covariates suffice,
+whether dosing variation identifies PK/PD parameters, and whether a severity readout of the required
+fidelity can be constructed. It is entirely possible that they are not, and a negative answer on any
+of them would be an informative result about the limits of this class of method.
+
+Only if those preconditions are met does the question of clinical utility arise, and even then the
+framework's output would be a set of hypotheses about which patients and which treatment intensities
+merit prospective evaluation---not treatment recommendations. Establishing clinical utility would
+require a subsequent trial testing a CICADAS-derived strategy against usual care. Until such a trial
+is conducted, the framework's value is methodological.

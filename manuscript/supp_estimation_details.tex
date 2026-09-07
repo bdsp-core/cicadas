@@ -1,0 +1,145 @@
+\subsubsection*{Extended Kalman Filter (EKF) and Rauch--Tung--Striebel (RTS) smoother}
+This subsection describes the estimation algorithm used to infer the latent untreated
+disease trajectory $L_{0,i,t}$ from noisy, treatment-modulated observations $L_{i,t}$
+within the state-space model defined above.
+Because $L_{0,i,t}$ is not directly observed, likelihood evaluation requires integration
+over latent state trajectories.
+We therefore adopt a standard nonlinear state-space formulation in which the disease
+dynamics define state evolution and the PK/PD model defines a nonlinear observation equation.
+To perform tractable inference in this setting, we use an Extended Kalman Filter (EKF)
+for forward filtering and a Rauch--Tung--Striebel (RTS) smoother for backward smoothing.
+These are standard smoothing methods used here solely to support parameter estimation
+(via EM) and are not, by themselves, causal-inference contributions of CICADAS.
+Here, $Q_t$ denotes the process-noise covariance governing stochastic evolution of
+$L_{0,i,t}$, and $R$ denotes the observation-noise variance (or covariance) in the
+measurement model for $L_{i,t}$.
+
+\paragraph{EKF prediction.}
+With $\hat L_{0,i,t-1|t-1}$ and $P_{i,t-1|t-1}$,
+the predicted state mean is obtained by discretizing the drift
+$\mu(L,t)$ defined in Equation~\eqref{eq:disease_drift}:
+\begin{align}
+\hat L_{0,i,t|t-1}
+&= \hat L_{0,i,t-1|t-1}
+   + \mu\!\left(\hat L_{0,i,t-1|t-1},\, t\right)\,\Delta t, \\
+P_{i,t|t-1}
+&= F_t\, P_{i,t-1|t-1}\, F_t^\top + Q_t,
+\end{align}
+where
+\[
+F_t
+= \left.\frac{\partial}{\partial L}
+\Big[ L + \mu(L,t)\,\Delta t \Big]\right|_{L=\hat L_{0,i,t-1|t-1}}
+\]
+is the Jacobian of the discretized drift with respect to the latent state. Here $Q_t$ denotes the process noise covariance implied by the diffusion term
+in Equation~\eqref{eq:disease_diffusion}, and $R$ denotes the observation noise
+variance of the PK/PD measurement model.
+
+\paragraph{EKF update.}
+Linearizing $h(x,t)=x\,s_{x_t,i}$ around $\hat L_{0,i,t|t-1}$ gives the observation matrix
+\[
+H_{i,t} \;=\; \left.\frac{\partial}{\partial x} \big[x\, s_{x_t,i}\big]\right|_{x=\hat L_{0,i,t|t-1}} \;=\; s_{x_t,i}.
+\]
+Then
+\begin{align}
+K_{i,t} &= P_{i,t|t-1} H_{i,t}^\top \Big(H_{i,t} P_{i,t|t-1} H_{i,t}^\top + R\Big)^{-1}, \\
+\hat L_{0,i,t|t} &= \hat L_{0,i,t|t-1} + K_{i,t}\Big[L_{i,t} - \hat L_{0,i,t|t-1}\, s_{x_t,i}\Big], \\
+P_{i,t|t} &= \big(I - K_{i,t} H_{i,t}\big)\, P_{i,t|t-1}.
+\end{align}
+
+\paragraph{RTS smoother.}
+Backward for $t=T-1,\dots,0$:
+\begin{align}
+J_{i,t} &= P_{i,t|t}\, F_{t+1}^\top \, P_{i,t+1|t}^{-1}, \\
+\hat L_{0,i,t|T} &= \hat L_{0,i,t|t} + J_{i,t}\,\big(\hat L_{0,i,t+1|T} - \hat L_{0,i,t+1|t}\big), \\
+P_{i,t|T} &= P_{i,t|t} + J_{i,t}\,\big(P_{i,t+1|T} - P_{i,t+1|t}\big)\, J_{i,t}^\top.
+\end{align}
+
+\subsubsection*{Expectation--Maximization (EM)}
+We jointly estimate $\boldsymbol{\theta}$ and the latent trajectories $\{L_{0,i,t}\}$ with EM.
+
+\paragraph{E-step.}
+Run EKF/RTS for each patient to obtain $\{\hat L_{0,i,t|T},\, P_{i,t|T}\}_{t=0}^T$ and the lagged covariances needed for quadratic forms in the M-step.
+
+\paragraph{M-step.}
+\emph{Fixed effects:} with $C_i$ and $g_i$ defined by the mixed-effects maps in Section~\ref{sec:pkpd_model},
+\begin{equation}
+\hat{\boldsymbol{\beta}}^{(k+1)} 
+= \arg\min_{\boldsymbol{\beta}}
+\left\{
+\sum_{i,t}\, \ell_{i,t}(\boldsymbol{\beta};\, \hat L_{0,i,t|T}) \;+\; 
+\lambda \big\|\boldsymbol{\beta}-\boldsymbol{\beta}_{\text{prior}}\big\|_2^2
+\right\},
+\end{equation}
+where $\ell_{i,t}$ is the negative log-likelihood contribution under the linear mixed-effects maps for $C_i$ and $g_i$.
+
+\emph{Variance components (random effects):}
+\begin{align}
+\hat\sigma_C^{2\,(k+1)} &= \frac{1}{N} \sum_{i=1}^N \big(\hat C_i - \mathbf{x}_i^\top \hat{\boldsymbol{\beta}}_C\big)^2, \\
+\hat\sigma_g^{2\,(k+1)} &= \frac{1}{N} \sum_{i=1}^N \big(\hat g_i - \mathbf{x}_i^\top \hat{\boldsymbol{\beta}}_g\big)^2,
+\end{align}
+with $\mathbf{x}_i=[1,\,\mathrm{age}_i^*,\,\mathrm{SOFA}_i^*]^\top$.
+
+\emph{PK elimination $k_e$:} see ``Strategy~3 (Two-stage)" below. If $k_e$ is treated as unknown in the joint likelihood, we update it by a one-dimensional line search maximizing the expected complete-data log-likelihood; however, for numerical stability and identifiability we prefer the two-stage procedure.
+
+Iterate until $\|\boldsymbol{\theta}^{(k+1)} - \boldsymbol{\theta}^{(k)}\|_2 < \varepsilon$ or a maximum number of iterations is reached.
+
+\subsubsection*{Alternative estimation strategies}
+We considered four different estimation strategies:
+
+\paragraph{(1) Joint estimation.}
+Maximize a penalized likelihood over all parameters,
+\[
+\mathcal{L}(\boldsymbol{\theta})
+= 
+\sum_{i,t} \log p\!\big(L_{i,t}\,\big|\, \boldsymbol{\theta}, \mathcal{H}_{i,t-1}\big)
+\;-\;\lambda \|\boldsymbol{\theta}\|_2^2,
+\]
+noting that $k_e$ can be weakly identified in closed-loop--like data due to confounding with $C_{50,i},\gamma_i$.
+
+\paragraph{(2) Oracle $k_e$.}
+Fix $k_e$ (could be reasonable if \ $k_e$ is known from prior PK studies) and estimate only $\boldsymbol{\beta}$ (and $\sigma_C^2,\sigma_g^2$). This reduces the parameter space and improves conditioning.
+
+\paragraph{(3) Two-stage (when $k_e$ is unknown).}
+\emph{Stage 1 (standalone $k_e$):} identify dose-change events with $|A_{i,t}-A_{i,t-1}|>\delta_A$; for each such event, extract a window of length $T_w$ time points post-change and fit
+\[
+\hat{k}_{e,i}
+= \arg\min_{k_e} 
+\sum_{t \in \text{window}} \Big[L_{i,t} - \hat L_{i,t}\big(t \,|\, k_e\big)\Big]^2
+\]
+under a simplified transient model; then aggregate across patients via a weighted median
+\[
+\hat{k}_e = \mathrm{median}_w\{\hat{k}_{e,i}\}, \qquad w_i = 1/\mathrm{var}(\hat{k}_{e,i}).
+\]
+\emph{Stage 2 (fixed $k_e$):} treat $\hat k_e$ as known and estimate $\boldsymbol{\beta},\sigma_C^2,\sigma_g^2$ via the EM steps above.
+
+\paragraph{(4) Two-stage with bias correction.}
+If $\hat k_e$ shows empirical bias, apply a calibrated multiplicative correction
+\[
+\hat k_e^{\text{corr}} \;=\; \alpha_{\mathrm{corr}} \cdot \hat k_e^{\text{raw}}, 
+\quad \alpha_{\mathrm{corr}} = 1.41,
+\]
+optionally blending with prior information:
+\[
+\hat k_e^{\text{final}} \;=\; (1-w)\,\hat k_e^{\text{corr}} \;+\; w\, k_e^{\text{prior}}, \quad w \in [0,1].
+\]
+
+\subsubsection*{Design diagnostics and inclusion criteria}
+We compute the design diagnostics in Section~\ref{sec:design_diagnostics} to verify estimability: sufficient time with $x_t/C_{50}$ in $[0.25,4]$, a 3--5x within-patient concentration span, and nonzero dose-change frequency. Only trajectories meeting minimal excitation are used for PK/PD estimation; others are held out for the survival analysis. 
+
+\subsubsection*{Uncertainty quantification}
+We use patient-level nonparametric bootstrap to construct 95\% CIs for all elements of $\boldsymbol{\theta}$ and the variance components. EKF/EM are rerun within each bootstrap replicate.
+
+\subsubsection*{Performance metrics}
+We report:
+(i) parameter recovery (MAPE and per-parameter errors), 
+(ii) latent-state recovery (Pearson correlation and RMSE between $\hat L_{0,i,t}$ and the true $L_{0,i,t}$ in simulations),
+(iii) predictive performance for $L_t$ (MAPE and $R^2$), and
+(iv) computational efficiency (wall-clock time, EM iterations, Fisher information condition number).
+
+\subsubsection*{Implementation details}
+All algorithms are implemented in MATLAB R2024b with interior-point \texttt{fmincon} where needed; default settings are: EM tolerance $\varepsilon=10^{-4}$, max 30 iterations, regularization $\lambda=5.0$, process noise $Q_t = 0.01 \cdot L_{0,i,t}$ (state-dependent), and observation noise $R=0.1$. Hyperparameters for RTS/EKF were fixed in main analyses and varied in sensitivity checks.
+
+All algorithms are also implemented in Python (\texttt{NumPy}/\texttt{SciPy}). When constrained optimization is needed, we use \texttt{scipy.optimize.minimize} with \texttt{method="trust-constr"} (an interior-point solver). Unless noted otherwise, EM runs with tolerance $\varepsilon = 10^{-4}$ and a maximum of 30 iterations; $\ell_2$ regularization uses $\lambda = 5.0$; the EKF uses state-dependent process noise $Q_t = 0.01 \cdot L_{0,i,t}$ and observation noise $R = 0.1$. EKF/RTS hyperparameters are fixed in the main analyses and only varied in sensitivity checks.
+
+%========================================================
