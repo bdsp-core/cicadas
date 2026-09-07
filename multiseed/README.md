@@ -55,3 +55,38 @@ PCG64), so the same nominal seed produces different individual cohorts. They are
 therefore independent replications, not bit-for-bit reproductions. Across 200 seeds
 each, they agree on every quantity to within Monte Carlo error (Welch p >= 0.06;
 two-sample Kolmogorov-Smirnov p >= 0.11).
+
+---
+
+## Calibration of the g-formula confidence intervals
+
+`coverage_py.py` and `coverage_analysis.py` establish the sampling distribution of the g-formula
+estimator across independently simulated cohorts, and compare it against the bootstrap standard error
+reported by `a2_CausalSurvivalAnalysis.m`.
+
+```bash
+python coverage_py.py 100 2000     # ~35 min; writes coverage_results.csv
+python coverage_analysis.py        # writes the comparison
+```
+
+Each replication re-estimates the mortality and natural-history models from a fresh observational
+cohort and emulates a randomized trial by forward Monte Carlo. The PK/PD fit is held at its point
+estimate, mirroring both the analysis pipeline (`a1` runs once on the dose-switching cohort, `a2`
+consumes its output) and `a2`'s bootstrap, which holds it fixed as well. The resulting spread is
+therefore a lower bound on total sampling variability.
+
+### Results (100 replications, N = 2000)
+
+| Quantity | Value |
+|---|---|
+| g-formula ATE | +15.02 pp (SD 2.32, MCSE 0.23) |
+| ground-truth ATE | +14.30 pp (SD 2.25) |
+| bias | +0.72 pp (95% CI +0.10 to +1.34) |
+| empirical sampling SD | 2.32 pp |
+| bootstrap SE (B = 1000, one cohort) | 2.16 pp |
+| ratio bootstrap/empirical | 0.93 |
+| coverage of a nominal 95% interval | 92% (95% CI 87–97%) |
+
+The bootstrap standard error is close to the empirical sampling standard deviation, so the intervals
+are approximately calibrated at the nominal level. The estimator carries a small upward bias of about
+5% of the effect being estimated.
