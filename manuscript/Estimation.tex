@@ -178,8 +178,10 @@ difference in survival proportions with no modeling. The estimator is then appli
 observational cohort alone and its output compared with that ground truth.
 
 Performance is assessed on three criteria: bias of the estimated policy contrast against the ground
-truth at 168 hours; coverage of bootstrap confidence intervals; and agreement between the estimated
-and true counterfactual survival curves over the whole follow-up rather than at the endpoint alone. We
+truth; the calibration of bootstrap confidence intervals, assessed by comparing the bootstrap
+standard error against the empirical sampling distribution of the estimator across independently
+simulated cohorts; and agreement between the estimated and true counterfactual survival curves
+over the whole follow-up rather than at the endpoint alone. We
 report the same comparison for naive Kaplan--Meier, stabilized IPTW, and a marginal structural model,
 so that the g-formula's performance can be read against alternatives applied to identical data.
 

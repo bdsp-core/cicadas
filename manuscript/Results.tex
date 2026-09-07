@@ -134,7 +134,7 @@ The mixed-effects coefficients defining how patient-specific PKPD parameters dep
 
 We assessed parameter uncertainty using patient-level nonparametric bootstrap resampling ($B=1000$ replicates). Bootstrap resampling was performed at the patient level to preserve the within-patient correlation structure while allowing for realistic assessment of sampling variability. For each bootstrap replicate, we re-estimated all PKPD parameters using the corrected two-stage method.
 
-Bootstrap confidence intervals for showed good coverage properties. The 95\% confidence intervals for the elimination constant $k_e$ ranged from 0.47 to 0.53 (true value 0.5), while confidence intervals for the mixed-effects coefficients ($\beta^C_0$, $\beta^C_1$, $\beta^C_2$, $\beta^g_0$, $\beta^g_1$, $\beta^g_2$) achieved 94--98\% empirical coverage across parameters. The narrow confidence intervals reflect the precision achieved through the dose-switching experimental design and confirm the stability of our estimation approach across different patient samples.
+The resulting 95\% interval for the elimination constant $k_e$ was $[0.47, 0.53]$ against a true value of $0.5$, and the intervals for the mixed-effects coefficients ($\beta^C_0$, $\beta^C_1$, $\beta^C_2$, $\beta^g_0$, $\beta^g_1$, $\beta^g_2$) were correspondingly narrow, reflecting the identification afforded by the dose-switching design.
 
 
 \subsection{Internal Validation: Causal Effect Recovery}
@@ -146,7 +146,28 @@ The g-formula recovers the ground-truth effect closely despite confounding sever
 
 This closely approximates the ground truth from the randomized controlled trial (treated survival 46.0\% vs. untreated 31.2\%, ATE +14.8\%), representing a recovery error of only 0.6 percentage points or 3.8\% relative error. Figure~\ref{fig:gformula_recovery} shows the estimated and ground-truth survival curves over the full follow-up. This recovery establishes that the estimator is consistent for the target parameter under the conditions of this simulation---correctly specified component models, measured confounding, and the censoring mechanism used to generate the data. It does not establish that these conditions hold in ICU data; Section~\ref{sec:misspec} discusses which of them are most likely to fail.
 
-Bootstrap confidence intervals for the g-formula estimates achieved 100\% coverage of the true RCT values across all endpoints, demonstrating reliable uncertainty quantification even under strong confounding by indication.
+To assess the uncertainty quantification we repeated the entire generate--estimate--emulate procedure
+across 100 independently simulated cohorts, re-estimating the mortality and natural-history models in
+each. Across these replications the g-formula estimate had a standard deviation of 2.32 percentage
+points, against a bootstrap standard error of 2.16 points obtained from a single cohort (ratio 0.93).
+A nominal 95\% interval constructed from the bootstrap standard error contained the population
+estimand in 92\% of replications (95\% CI 87--97\%), so the intervals are approximately calibrated at
+the nominal level. We note that this is a lower bound on total sampling variability: as in the
+bootstrap itself, the pharmacokinetic--pharmacodynamic fit is held at its point estimate rather than
+re-estimated, so uncertainty in that component is not propagated into the interval.
+
+Across the same 100 replications the estimator's mean was $+15.02$ percentage points against a mean
+ground truth of $+14.30$, a bias of $+0.72$ points (95\% CI $+0.10$ to $+1.34$), or about 5\% of the
+effect being estimated. The bias is small relative to the effect but statistically distinguishable
+from zero, and it is upward: in this data-generating process the g-formula slightly overstates the
+benefit of suppression.
+
+One point of interpretation matters here. The g-formula estimate is obtained by forward simulation
+from fitted models and therefore targets the population-level estimand rather than the realized
+treatment effect of the particular cohort it was fitted on. Because a single cohort's realized effect
+is itself a draw with non-trivial variability (SD 2.25 points across the replications reported here),
+scoring the estimator against one cohort's realized value conflates estimator bias with that cohort's
+sampling noise.
 
 The magnitude of the correction is best read against the replicated naive estimates of Table~\ref{tab:multiseed} rather than against a single cohort. Naive Kaplan--Meier analysis retained on average only 7\% of the true effect ($+1.0$ against $+14.6$ percentage points), and in this representative cohort it indicated net harm ($-4.8\%$). The g-formula recovers the ground truth in the same data, a correction of roughly 13.6 percentage points on average and 19.6 points in the cohort shown.
 
