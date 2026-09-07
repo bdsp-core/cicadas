@@ -322,7 +322,9 @@ if wrong_direction:
 # RCT = 1
 # treatProb_est = np.full(N, 0.5)
 # L0_est = fcnGenerateStochasticTrajectories(t_est, parmsL_est, N)
-# T1_est = fcnSimulate_N_Patients(N, RCT, treatProb_est, th, C, g, ke, L0_est, parmsControl, parmsY_est, np.zeros(6), age_est, sofa_est)
+# T1_est = fcnSimulate_N_Patients(N, RCT, treatProb_est, th, C_est, g_est, ke_est, L0_est, parmsControl, parmsY_est, np.zeros(6), age_est, sofa_est)
+# NOTE: pass the ESTIMATED C_est/g_est/ke_est, never the true C/g/ke — the latter
+# would give the g-formula oracle knowledge of the drug response.
 # s0_gf, s1_gf, t0_gf, t1_gf = _plotKM_py(T1_est)
 #
 # ate_gformula = s1_gf[-1] - s0_gf[-1]

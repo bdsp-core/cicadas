@@ -215,7 +215,13 @@ if sign(ate_naive) ~= sign(ate_true) && ate_true ~= 0
     end
 end
 
-%% Get g-formula estimates: 
+%% Get g-formula estimates:
+% NOTE: this inline g-formula is illustrative only. It estimates PK/PD parameters
+% from the observational cohort, where treated patients are under closed-loop
+% control and therefore provide little dose variation. The canonical analysis
+% (a2_CausalSurvivalAnalysis.m) uses the PK/PD fit from a1, which is estimated on
+% the dedicated dose-switching cohort. The numbers reported in the paper come from
+% a2; expect this line to be less accurate.
 T0 = readtable('trialData0.csv');
 parmsY_est = fcnEstimateDeathParms(T0);
 [parmsL_est, LL, AA, age, sofa, t] = fcnEstimateParmsL(T0);
@@ -224,7 +230,11 @@ parmsY_est = fcnEstimateDeathParms(T0);
 RCT=1;
 treatProb = 0.5*ones(1,N);
 L0_est = fcnGenerateStochasticTrajectories(t, parmsL_est, N);
-T1_est = fcnSimulate_N_Patients(N,RCT,treatProb,th, C, g, ke, L0_est, parmsControl, parmsY_est, [0 0 0 0 0 0], age, sofa);
+% Use the ESTIMATED PK/PD parameters, not the true C, g, ke. Passing the true
+% values here would give the g-formula oracle knowledge of the drug response and
+% overstate its accuracy. The canonical analysis in a2_CausalSurvivalAnalysis.m
+% has always used the estimates; this line is brought into line with it.
+T1_est = fcnSimulate_N_Patients(N,RCT,treatProb,th, C_est, g_est, ke_est, L0_est, parmsControl, parmsY_est, [0 0 0 0 0 0], age, sofa);
 [s0_gf, s1_gf, t0_gf, t1_gf] = fcnPlotKM(T1_est);
 
 % Calculate g-formula ATE
